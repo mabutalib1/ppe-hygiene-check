@@ -6,21 +6,37 @@ venv/
 *.egg-info/
 .pytest_cache/
 
-# Data & models (never commit images: privacy)
+# Secrets
+.env
+
+# Data: never commit footage or frames (privacy + size)
+*.mp4
+*.mov
+*.avi
+*.mkv
+data/event_clips/
 data/raw/
-data/merged/
-data/local/
+data/public/
 *.jpg
 *.jpeg
-*.png
-*.mp4
-runs/
-weights/
+
+# Models (use GitHub Releases)
 *.pt
 *.onnx
-reports/
+training/runs/
+runs/
 
-# Env
-.env
+# Backend runtime (events.db, snapshots)
+backend/runtime/
+runtime/
+evaluation/out/
+
+# Node / Expo
+node_modules/
+.expo/
+
+# OS / editors
 .DS_Store
 .ipynb_checkpoints/
+.vscode/
+.idea/

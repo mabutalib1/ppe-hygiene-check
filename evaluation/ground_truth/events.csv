@@ -1,0 +1,4 @@
+clip,person,item,change,time_sec
+e01,left,gloves,removed,42
+e01,left,gloves,put_back,71
+e02,right,mask,removed,18

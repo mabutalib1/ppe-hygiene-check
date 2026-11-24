@@ -1,0 +1,3 @@
+file,split,angle,clip_type,people,lighting,notes
+v01_train_angleA.mp4,train,A,fully_compliant,2,lights_on,
+e01.mp4,event,A,violation_event,2,lights_on,left person removes gloves ~42s

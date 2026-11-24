@@ -1,79 +1,65 @@
-# PPE Hygiene Check — Cafés & Restaurants
+# Check (شيك): Live Staff Hygiene Monitoring
 
-Computer vision system that automates the manual staff hygiene inspection used in cafés and restaurants.
+**Check watches a kitchen's CCTV feed live, follows every staff member, and alerts the supervisor the moment someone breaks a hygiene rule**, like taking off their gloves or pulling down their mask.
 
-Today an inspector takes **6 photos** per employee and marks pass/fail by hand. This project replaces that with a **check-in station**: the employee stands in front of a camera for a few seconds, shows both hands, and the system fills in the same report automatically, with a photo and a pass/fail result for each item.
+Food businesses must make staff wear masks, hairnets, gloves and a clean uniform. Today a supervisor checks this by eye, so there are gaps whenever they look away.
 
-| Checklist item | What is checked | Method | Phase |
-|---|---|---|---|
-| Facemask | Worn, worn correctly (nose covered) | YOLO detector | 1 (MVP) |
-| Hairnet | Present on head | YOLO detector | 1 (MVP) |
-| Gloves | Both hands gloved | YOLO detector + hand count | 1 (MVP) |
-| Hair | Fully covered, no exposed hair | Head-crop classifier | 2 |
-| Uniform | Matches approved uniform | Embedding similarity vs reference photos | 2 |
-| Nails | Short, clean, no polish | Fingertip-crop classifier (check-in only) | 3 |
+![Architecture](docs/architecture.png)
 
-## Pipeline
+## What makes it more than a PPE detector
 
-```
-Camera frame
-  → YOLO detector (person, mask, hairnet, glove, bare_hand, ...)
-  → assign detections to each person (box overlap)
-  → per-item checks  (+ crop classifiers for hair / uniform / nails)
-  → rules engine (which items are required for this site/role)
-  → report: PASS / FAIL / NEEDS_REVIEW per item + evidence photo
-```
+1. **Tracking:** we know *who* is missing an item, not just that a missing item exists somewhere in the frame
+2. **Time logic:** "removed gloves" is a real event (had gloves, then lost them for a few seconds), not a flicker from one bad frame
+3. **A product around it:** a mobile app with live status and an alert log
 
-Low-confidence results return `NEEDS_REVIEW` instead of guessing, so a supervisor can confirm them.
+## Repository
 
-## Repo structure
+| Folder | Contains |
+|---|---|
+| [`backend/`](backend/) | FastAPI server: camera reader, YOLO + ByteTrack, violation logic, SQLite, Dockerfile |
+| [`mobile/`](mobile/) | Expo React Native app: Connect, Live, Alerts |
+| [`training/`](training/) | Training script, Colab notebook, class list, public-data remap, results table |
+| [`evaluation/`](evaluation/) | Event-level scoring (caught %, false alarms, delay), ground truth CSVs |
+| [`data/`](data/) | Recording plan, labeling rules, recording log (no videos in git) |
+| [`docs/`](docs/) | Implementation plan, architecture diagram, decisions |
 
-```
-configs/        classes, dataset sources, site rules
-data/           raw + merged datasets (gitignored, see data/README.md)
-scripts/        download, merge, and train
-src/ppe_check/  pipeline, rules engine, item checks, report
-app/            Streamlit check-in station demo
-tests/          unit tests
-docs/           checklist → CV mapping, data plan
-```
-
-## Quick start
+## Quick start (no model needed)
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+# backend with scripted detections and a synthetic camera
+cd backend
+pip install -r requirements-dev.txt
+DETECTOR=fake CAMERA_SOURCE=synthetic uvicorn app.main:app --host 0.0.0.0 --port 8000
 
-# 1. Download public datasets (needs a free Roboflow API key)
-export ROBOFLOW_API_KEY=xxxx
-python scripts/download_datasets.py
-
-# 2. Merge them into one YOLO dataset with unified class names
-python scripts/merge_datasets.py
-
-# 3. Train the detector
-python scripts/train_detector.py --model yolo11n.pt --epochs 100
-
-# 4. Run the check-in demo
-streamlit run app/checkin_app.py
-
-# Tests
-pytest
+# app (another terminal)
+cd mobile
+npm install
+npx expo start      # scan the QR code with Expo Go, enter <laptop-ip>:8000
 ```
 
-## Data
+Within a minute, Person 2 removes their gloves and the phone buzzes.
 
-Public datasets cover mask, hairnet, and gloves. Hair, uniform, and nails need custom data. See [`docs/data_plan.md`](docs/data_plan.md).
+## Detector classes
 
-## Roadmap
+`person`, plus wearing / not wearing for 4 items: `hairnet` `no_hairnet` · `mask` `no_mask` · `gloves` `no_gloves` · `uniform` `no_uniform`. Hair is merged into hairnet (is the hair covered?). Uniform = white chef coat or white apron. Nails are not checked: they can't be judged from CCTV height (see [`docs/decisions.md`](docs/decisions.md)).
 
-- [ ] Phase 1: merge public datasets, train detector (mask / hairnet / gloves)
-- [ ] Phase 1: check-in station demo with auto-filled report
-- [ ] Collect local validation set (Saudi cafés / restaurants)
-- [ ] Phase 2: hair-coverage classifier, uniform matching
-- [ ] Phase 3: nails classifier
-- [ ] Optional: continuous CCTV monitoring with tracking
+## Workflow
+
+1. **Record** mock-CCTV clips, split by video ([`data/README.md`](data/README.md))
+2. **Label** in Roboflow with [`data/labeling_rules.md`](data/labeling_rules.md)
+3. **Train** on Colab: [`training/train_colab.ipynb`](training/train_colab.ipynb). Results are logged to [`training/results.md`](training/results.md)
+4. **Evaluate** events: [`evaluation/README.md`](evaluation/README.md)
+5. **Run** the backend with the real weights + the app ([`backend/README.md`](backend/README.md))
+
+Videos stay in the shared drive and Roboflow. Weights (`best.pt`, `best.onnx`) go in GitHub Releases.
+
+## Tests
+
+```bash
+cd backend && pytest                    # violation logic, store, API
+cd .. && pytest evaluation/tests        # event scoring
+```
 
 ## Privacy
 
-Images contain employee faces. Collect with consent, keep retention short, and never commit images to this repo.
+Anonymous IDs only (Person 1, Person 2). No face recognition. IDs are per camera session, not real identities. Footage stays local and is only recorded with consent.

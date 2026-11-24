@@ -1,0 +1,40 @@
+# The 9 detector classes. Spell them exactly like this in Roboflow.
+names:
+  - person
+  - hairnet
+  - no_hairnet
+  - mask
+  - no_mask
+  - gloves
+  - no_gloves
+  - uniform
+  - no_uniform
+
+# Public-dataset label (lowercased) -> our class. Anything not listed is dropped.
+# Only add a mapping if the public class MEANS the same as ours.
+aliases:
+  person: person
+  human: person
+  hairnet: hairnet
+  hair-net: hairnet
+  hair_net: hairnet
+  with_hairnet: hairnet
+  headnet: hairnet
+  no_hairnet: no_hairnet
+  without_hairnet: no_hairnet
+  no_hat-hairnet: no_hairnet
+  mask: mask
+  correct_mask: mask
+  "correct mask": mask
+  no_mask: no_mask
+  no-mask: no_mask
+  incorrect_mask: no_mask       # mask under the nose counts as no_mask
+  glove: gloves
+  gloves: gloves
+  gloved_hand: gloves
+  no_glove: no_gloves
+  no_gloves: no_gloves
+  no-gloves: no_gloves
+  bare_hand: no_gloves
+  bare-hand: no_gloves
+  apron: uniform

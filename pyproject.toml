@@ -1,9 +1,0 @@
-[project]
-name = "ppe-check"
-version = "0.1.0"
-description = "Automated staff hygiene (PPE) checks for cafés and restaurants"
-requires-python = ">=3.10"
-
-[tool.pytest.ini_options]
-pythonpath = ["src"]
-testpaths = ["tests"]

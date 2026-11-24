@@ -1,0 +1,11 @@
+# ByteTrack settings for Check.
+# track_high_thresh / new_track_thresh match CHECK_ITEM_CONF (0.40) so the tracker
+# and the violation logic agree on what counts as a detection.
+# track_buffer is raised so people hidden behind others keep their ID longer.
+tracker_type: bytetrack
+track_high_thresh: 0.40
+track_low_thresh: 0.10
+new_track_thresh: 0.40
+track_buffer: 90        # frames (~9 s at 10 fps)
+match_thresh: 0.80
+fuse_score: true

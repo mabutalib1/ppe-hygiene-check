@@ -1,0 +1,3 @@
+ultralytics==8.4.218
+roboflow==1.7.3
+pyyaml==6.0.3
