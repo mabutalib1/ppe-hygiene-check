@@ -41,7 +41,7 @@ Within a minute, Person 2 removes their gloves and the phone buzzes.
 
 ## Detector classes
 
-`person`, plus wearing / not wearing for 4 items: `hairnet` `no_hairnet` · `mask` `no_mask` · `gloves` `no_gloves` · `uniform` `no_uniform`. Hair is merged into hairnet (is the hair covered?). Uniform = white chef coat or white apron. Nails are not checked: they can't be judged from CCTV height (see [`docs/decisions.md`](docs/decisions.md)).
+`person`, plus wearing / not wearing for 3 items: `hairnet` `no_hairnet` · `mask` `no_mask` · `gloves` `no_gloves`. Hair is merged into hairnet (is the hair covered?). Uniform and nails are not checked: they can't be judged from CCTV height (see [`docs/decisions.md`](docs/decisions.md)).
 
 ## Workflow
 

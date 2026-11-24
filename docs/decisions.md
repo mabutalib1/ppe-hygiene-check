@@ -10,6 +10,7 @@ Changes made while reviewing `implementation_plan.md`. Discuss them in the group
 | 4 | Nails are on the restaurant's manual checklist but not in the system | Say it in the presentation: nails can't be judged from CCTV height. Nails stay a manual check (possible later: a close-up check-in station). |
 | 5 | A camera tilted down sees the top of the head, so the lower face is often hidden | Expect many `unknown` mask states. Record top-down hard cases (looking down at the counter). |
 | 6 | The tracker and the violation logic could use different confidence thresholds | `backend/app/bytetrack_check.yaml` sets `track_high_thresh` / `new_track_thresh` to 0.40 = `CHECK_ITEM_CONF`. |
+| 7 | Which items does the system check? | **Scope cut to gloves, hairnet, mask** (2026-11-24). `uniform` / `no_uniform` removed: 7 classes instead of 9. Uniform stays a manual check. The plan's staff-vs-customer idea (uniform = staff) no longer has a signal. |
 
 ## Mapping from the manual checklist
 
@@ -19,5 +20,5 @@ Changes made while reviewing `implementation_plan.md`. Discuss them in the group
 | Hairnet | `hairnet` / `no_hairnet` |
 | Hair | Merged into hairnet: is the hair covered? |
 | Gloves | `gloves` / `no_gloves`, one box per hand |
-| Uniform | `uniform` / `no_uniform` (white chef coat or white apron) |
+| Uniform | Not automated (see #7) |
 | Nails | Not automated (see #4) |

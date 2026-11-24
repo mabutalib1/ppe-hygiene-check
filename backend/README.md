@@ -57,7 +57,7 @@ A webcam inside Docker needs `--device /dev/video0` (Linux only). For the demo, 
 Messages:
 
 ```json
-{"type": "status", "fps": 9.8, "people": [{"id": 3, "items": {"mask": "ok", "hairnet": "ok", "gloves": "violation", "uniform": "unknown"}}]}
+{"type": "status", "fps": 9.8, "people": [{"id": 3, "items": {"mask": "ok", "hairnet": "ok", "gloves": "violation"}}]}
 {"type": "violation", "event_id": "evt_0042", "person_id": 3, "item": "gloves", "change": "removed", "camera": "kitchen-1", "time": "2026-12-10T14:32:10+03:00", "snapshot_url": "/snapshots/evt_0042.jpg"}
 {"type": "resolved", "event_id": "evt_0042", "person_id": 3, "item": "gloves", "change": "put_back", "time": "2026-12-10T14:32:40+03:00", "duration_s": 30.0}
 ```

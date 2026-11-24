@@ -61,7 +61,6 @@ class FakeDetector:
             out.append(Detection("person", 0.92, (px1, py1, px2, py2), tid))
             head = (px1 + 0.3 * pw, py1, px1 + 0.7 * pw, py1 + 0.12 * h)
             face = (px1 + 0.35 * pw, py1 + 0.08 * h, px1 + 0.65 * pw, py1 + 0.15 * h)
-            torso = (px1 + 0.15 * pw, py1 + 0.17 * h, px1 + 0.85 * pw, py1 + 0.5 * h)
             hand_l = (px1, py1 + 0.45 * h, px1 + 0.2 * pw, py1 + 0.53 * h)
             hand_r = (px2 - 0.2 * pw, py1 + 0.45 * h, px2, py1 + 0.53 * h)
 
@@ -69,7 +68,6 @@ class FakeDetector:
             gloves_off = tid == 2 and 20 <= s < 35
             out.append(Detection("hairnet", 0.88, head))
             out.append(Detection("no_mask" if mask_off else "mask", 0.85, face))
-            out.append(Detection("uniform", 0.90, torso))
             out.append(Detection("no_gloves" if gloves_off else "gloves", 0.80, hand_l))
             out.append(Detection("gloves", 0.80, hand_r))
         return out

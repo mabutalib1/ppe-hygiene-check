@@ -6,13 +6,12 @@ from typing import Optional, Tuple
 
 Box = Tuple[float, float, float, float]  # x1, y1, x2, y2 in pixels
 
-# The 9 detector classes (must match training/classes.yaml)
+# The 7 detector classes (must match training/classes.yaml)
 CLASSES = (
     "person",
     "hairnet", "no_hairnet",
     "mask", "no_mask",
     "gloves", "no_gloves",
-    "uniform", "no_uniform",
 )
 
 # item -> (wearing class, not-wearing class)
@@ -20,7 +19,6 @@ ITEMS = {
     "mask": ("mask", "no_mask"),
     "hairnet": ("hairnet", "no_hairnet"),
     "gloves": ("gloves", "no_gloves"),
-    "uniform": ("uniform", "no_uniform"),
 }
 LABEL_TO_ITEM = {lbl: item for item, pair in ITEMS.items() for lbl in pair}
 

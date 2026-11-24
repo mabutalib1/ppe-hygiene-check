@@ -71,8 +71,7 @@ def main():
 
 
 def append_result(args, run_name, map50, map5095, per_class):
-    cols = ["person", "hairnet", "no_hairnet", "mask", "no_mask", "gloves", "no_gloves",
-            "uniform", "no_uniform"]
+    cols = ["person", "hairnet", "no_hairnet", "mask", "no_mask", "gloves", "no_gloves"]
     row = [str(date.today()), f"v{args.version}", Path(args.model).stem, str(args.imgsz),
            f"{map50:.3f}", f"{map5095:.3f}"] + \
           [f"{per_class[c]:.2f}" if c in per_class else "-" for c in cols] + [args.note or run_name]

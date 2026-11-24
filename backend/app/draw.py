@@ -10,7 +10,7 @@ from .types import Detection
 
 # BGR
 COLORS = {"ok": (80, 200, 80), "violation": (40, 40, 230), "unknown": (150, 150, 150)}
-SHORT = {"mask": "M", "hairnet": "H", "gloves": "G", "uniform": "U"}
+SHORT = {"mask": "M", "hairnet": "H", "gloves": "G"}
 
 
 def _worst(items: Dict[str, str]) -> str:

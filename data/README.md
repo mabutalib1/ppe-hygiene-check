@@ -14,8 +14,7 @@ No videos or images go in git. Raw videos live in the team's shared drive and Ro
 - **1080p, 30 fps, landscape**, same phone and spot for most clips
 - Second angle (other corner) for ~20% of clips
 - Set: table as counter, cutting board, bowls, utensils (hands holding things matter)
-- Props: hairnets, disposable masks, **blue and black gloves** (no clear gloves, see `docs/decisions.md`), 2–3 white aprons or chef coats
-- **Uniform = white chef coat or white apron.** Everything else is `no_uniform`
+- Props: hairnets, disposable masks, **blue and black gloves** (no clear gloves, see `docs/decisions.md`)
 
 ## What to record (1–3 min each, act naturally)
 
@@ -28,7 +27,7 @@ No videos or images go in git. Raw videos live in the team's shared drive and Ro
 | Hard cases: holding objects, facing away, blocked, **looking down at the counter** | Training |
 | Violation events: start compliant, remove an item halfway | **Testing only, never uploaded to Roboflow** |
 
-Vary: every teammate plus friends, lights on/off/daylight, 1–3 people in frame, different clothes under the uniform.
+Vary: every teammate plus friends, lights on/off/daylight, 1–3 people in frame, different clothes.
 
 ## Splitting by video (decide when recording)
 
@@ -44,7 +43,7 @@ Vary: every teammate plus friends, lights on/off/daylight, 1–3 people in frame
 
 ## Roboflow checklist
 
-1. Object Detection project, 9 classes spelled exactly as in `training/classes.yaml`
+1. Object Detection project, 7 classes spelled exactly as in `training/classes.yaml`
 2. Upload videos one at a time, sampling **0.5 fps**, split chosen to match the file name
 3. Labeling jobs per batch, **Review Mode on**, paste `labeling_rules.md`
 4. Generate version: **do NOT click Rebalance**. Auto-Orient on, resize 640×640. Augment (train only): brightness/exposure ±20%, slight blur, small noise, horizontal flip. No vertical flip, no big rotations

@@ -1,4 +1,4 @@
-"""Remap a public Roboflow dataset (YOLO export) to our 9 classes, as a TRAIN-ONLY folder.
+"""Remap a public Roboflow dataset (YOLO export) to our 7 classes, as a TRAIN-ONLY folder.
 
 Public images must never enter valid or test (our test set is our own videos).
 Upload the output folder to Roboflow with the split set to "train".

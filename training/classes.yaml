@@ -1,4 +1,4 @@
-# The 9 detector classes. Spell them exactly like this in Roboflow.
+# The 7 detector classes. Spell them exactly like this in Roboflow.
 names:
   - person
   - hairnet
@@ -7,8 +7,6 @@ names:
   - no_mask
   - gloves
   - no_gloves
-  - uniform
-  - no_uniform
 
 # Public-dataset label (lowercased) -> our class. Anything not listed is dropped.
 # Only add a mapping if the public class MEANS the same as ours.
@@ -37,4 +35,3 @@ aliases:
   no-gloves: no_gloves
   bare_hand: no_gloves
   bare-hand: no_gloves
-  apron: uniform

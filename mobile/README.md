@@ -5,7 +5,7 @@ The supervisor's view: live video with boxes, a status card per person, and an a
 | Screen | Shows |
 |---|---|
 | Connect | Server address + "Test connection" (calls `/health`), saved after the first success. Tap the address in the top bar to change it |
-| Live | Annotated video (`/stream` in a WebView) + one card per person: mask, hairnet, gloves, uniform in green / red / grey |
+| Live | Annotated video (`/stream` in a WebView) + one card per person: mask, hairnet, gloves in green / red / grey |
 | Alerts | Newest first: snapshot, person, item, removed/missing, time, ongoing or how long it lasted. Tap for the full snapshot. Pull to refresh |
 
 Built on Expo SDK 58. Dependencies: `react-native-webview` (MJPEG), `expo-notifications` (local alerts), `@react-native-async-storage/async-storage` (saved server address).

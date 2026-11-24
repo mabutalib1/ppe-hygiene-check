@@ -19,7 +19,6 @@ export const ITEMS = [
   { key: 'mask', label: 'Mask' },
   { key: 'hairnet', label: 'Hairnet' },
   { key: 'gloves', label: 'Gloves' },
-  { key: 'uniform', label: 'Uniform' },
 ];
 
 export const itemLabel = (k) => ITEMS.find((i) => i.key === k)?.label ?? k;
