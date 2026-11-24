@@ -1,0 +1,22 @@
+# Render Blueprint: deploys the backend + web dashboard as one Docker web service.
+# On Render: New → Blueprint → pick this repo. Then open https://<service>.onrender.com/
+#
+# This is the ONLINE DEMO: scripted detections on a synthetic camera, because a
+# cloud server can't see the kitchen's camera on the local network. The real system
+# runs on the laptop next to the camera (see backend/README.md).
+services:
+  - type: web
+    name: shayyek
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: DETECTOR
+        value: fake
+      - key: CAMERA_SOURCE
+        value: synthetic
+      - key: CAMERA_NAME
+        value: kitchen-1
