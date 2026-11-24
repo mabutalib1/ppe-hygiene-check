@@ -5,7 +5,7 @@ import logging
 import threading
 import time
 from datetime import datetime
-from typing import Callable, List, Optional
+from typing import Callable, Dict, List, Optional
 
 import cv2
 
@@ -14,6 +14,7 @@ from .detector import FakeDetector
 from .draw import annotate
 from .engine import ViolationEngine
 from .store import EventStore
+from .types import ITEMS
 
 log = logging.getLogger("check.processor")
 
@@ -35,6 +36,9 @@ class Processor:
 
         self.latest_jpeg: Optional[bytes] = None
         self.latest_status: List[dict] = []
+        # person-frames per item per state since start: the "time in compliance" numbers
+        self.compliance: Dict[str, Dict[str, int]] = {
+            i: {"ok": 0, "violation": 0, "unknown": 0} for i in ITEMS}
         self.fps = 0.0
         self.last_error: Optional[str] = None
         self._stop = threading.Event()
@@ -86,9 +90,13 @@ class Processor:
         if ok:
             self.latest_jpeg = buf.tobytes()
         self.latest_status = status
+        for person in status:
+            for item, state in person["items"].items():
+                self.compliance[item][state] += 1
 
         for ev in events:
-            ev = {**ev, "time": iso(ev.pop("t"))}
+            # copy without "t": the engine keeps this dict as open_event and needs "t" later
+            ev = {**{k: v for k, v in ev.items() if k != "t"}, "time": iso(ev["t"])}
             if ev["type"] == "violation":
                 snap = self.store.snapshot_path(ev["event_id"])
                 if ok:
