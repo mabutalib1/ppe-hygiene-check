@@ -2,7 +2,7 @@
 
 Two levels:
 
-1. **Model (single frames):** `model.val(split="test")` on the held-out test videos. `training/train.py` runs it and logs per-class mAP50 to `training/results.md`. Also check precision, recall and the confusion matrix in the run folder.
+1. **Model (single frames):** `model.val(split="test")` on the held-out test videos. `training/train.py` runs it and logs per-class mAP50 to `training/results.md` and `training/results.json` (the dashboard's Model page). Also check precision, recall and the confusion matrix in the run folder.
 2. **System (events):** does the whole pipeline catch real violations on the event clips?
 
 ## Level 2 steps
@@ -28,8 +28,10 @@ Two levels:
 
    ```bash
    python evaluation/score_events.py evaluation/ground_truth/events.csv evaluation/out/durations.csv \
-       evaluation/out/timelogic.csv evaluation/out/raw.csv
+       evaluation/out/timelogic.csv evaluation/out/raw.csv --json evaluation/results.json
    ```
+
+   `--json` saves the scores for the dashboard's Evaluation page. Commit `evaluation/results.json`.
 
    ```
    run                        caught  false/5min  delay s  alerts

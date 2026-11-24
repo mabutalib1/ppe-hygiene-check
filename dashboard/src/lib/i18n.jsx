@@ -1,0 +1,448 @@
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { load, save } from './storage';
+
+/**
+ * English + Arabic strings. Add a key to BOTH languages.
+ * {name} placeholders are filled from the second argument of t().
+ */
+const en = {
+  'app.title': 'Shayyek Dashboard',
+  'nav.live': 'Live',
+  'nav.alerts': 'Alerts',
+  'nav.insights': 'Insights',
+  'nav.model': 'Model',
+  'nav.evaluation': 'Evaluation',
+  'nav.system': 'System',
+  'nav.section.monitor': 'Monitor',
+  'nav.section.project': 'Project',
+
+  'conn.live': 'Live',
+  'conn.connecting': 'Connecting…',
+  'conn.offline': 'Backend offline',
+  'conn.offlineHint': 'Start the backend, then this page reconnects by itself.',
+  'demo.badge': 'Demo mode',
+  'demo.hint': 'Scripted detections: no trained model loaded yet.',
+  'lang.toggle': 'العربية',
+  'sound.on': 'Alert sound on',
+  'sound.off': 'Alert sound off',
+
+  'item.mask': 'Mask',
+  'item.hairnet': 'Hairnet',
+  'item.gloves': 'Gloves',
+  'state.ok': 'OK',
+  'state.violation': 'Violation',
+  'state.unknown': 'Not visible',
+  'change.removed': 'Removed',
+  'change.missing': 'Missing',
+  'change.put_back': 'Put back',
+  'person': 'Person {id}',
+  'all': 'All',
+
+  'live.camera': 'Camera',
+  'live.streamOff': 'No video',
+  'live.streamOffHint': 'The stream starts when the backend has a camera and a detector.',
+  'live.people': 'People in view',
+  'live.openViolations': 'Open violations',
+  'live.alertsToday': 'Alerts, last 24 h',
+  'live.fps': 'Frames / sec',
+  'live.staff': 'Staff on camera',
+  'live.nobody': 'Nobody in view',
+  'live.nobodyHint': 'People appear here as soon as the camera sees them.',
+  'live.feed': 'Live alerts',
+  'live.feedEmpty': 'No alerts yet',
+  'live.feedEmptyHint': 'New violations show up here instantly.',
+  'live.allClear': 'All clear',
+  'live.needsAttention': 'Needs attention',
+  'live.seeAll': 'See all alerts',
+
+  'toast.violation': '{person}: {item} {change}',
+  'toast.resolved': '{person}: {item} back on after {s}s',
+
+  'alerts.title': 'Alert history',
+  'alerts.subtitle': 'Every violation the system raised, with the frame it saw.',
+  'alerts.item': 'Item',
+  'alerts.status': 'Status',
+  'alerts.range': 'Period',
+  'alerts.open': 'Open',
+  'alerts.resolved': 'Resolved',
+  'alerts.export': 'Export CSV',
+  'alerts.col.snapshot': 'Frame',
+  'alerts.col.time': 'Time',
+  'alerts.col.person': 'Person',
+  'alerts.col.item': 'Item',
+  'alerts.col.what': 'What happened',
+  'alerts.col.status': 'Status',
+  'alerts.fixedIn': 'Fixed in {d}',
+  'alerts.stillOpen': 'Still open',
+  'alerts.none': 'No alerts match',
+  'alerts.noneHint': 'Try a longer period or clear the filters.',
+  'alerts.count': '{n} alerts',
+  'alerts.noSnapshot': 'No frame',
+
+  'range.1': 'Today',
+  'range.7': '7 days',
+  'range.30': '30 days',
+  'range.all': 'All time',
+
+  'insights.title': 'Insights',
+  'insights.subtitle': 'Patterns in the alerts, to target training and supervision.',
+  'insights.total': 'Alerts',
+  'insights.open': 'Open now',
+  'insights.meanFix': 'Avg. time to fix',
+  'insights.topItem': 'Most missed',
+  'insights.byDay': 'Alerts per day',
+  'insights.byHour': 'Alerts by hour of day',
+  'insights.byItem': 'By item',
+  'insights.compliance': 'Time in compliance',
+  'insights.complianceHint': 'Share of the time each item was seen worn, since the server started ({since}).',
+  'insights.notSeen': 'not seen {pct}',
+  'insights.noData': 'No alerts in this period',
+  'insights.noDataHint': 'Charts fill in as the system raises alerts.',
+  'insights.removedVsMissing': '{removed} removed · {missing} missing at entry',
+  'insights.fixAvg': 'avg. fix {d}',
+
+  'model.title': 'Model',
+  'model.subtitle': 'The detector: its training runs, per-class accuracy and the data behind it.',
+  'model.running': 'Running now',
+  'model.detector': 'Detector',
+  'model.weights': 'Weights',
+  'model.imgsz': 'Image size',
+  'model.device': 'Device',
+  'model.fake': 'Scripted (demo)',
+  'model.yolo': 'YOLO + ByteTrack',
+  'model.classes': 'Classes it detects',
+  'model.dataset': 'Recorded data',
+  'model.datasetHint': 'From data/recording_log.csv',
+  'model.clips': 'clips',
+  'model.bySplit': 'By split',
+  'model.byType': 'By clip type',
+  'model.noRuns': 'No training runs yet',
+  'model.noRunsHint': 'Results appear here automatically once training/train.py logs its first run.',
+  'model.step1': 'Record clips and log them in data/recording_log.csv',
+  'model.step2': 'Label in Roboflow using data/labeling_rules.md',
+  'model.step3': 'Train on Colab with training/train_colab.ipynb',
+  'model.step4': 'Commit training/results.json: this page updates',
+  'model.latest': 'Latest run',
+  'model.map50': 'mAP50',
+  'model.map5095': 'mAP50-95',
+  'model.precision': 'Precision',
+  'model.recall': 'Recall',
+  'model.vsPrev': '{d} vs previous',
+  'model.perClass': 'Accuracy per class (mAP50, test videos)',
+  'model.weak': 'Weak: label more of this',
+  'model.progress': 'How the model improved',
+  'model.runs': 'All runs',
+  'model.col.date': 'Date',
+  'model.col.dataset': 'Dataset',
+  'model.col.model': 'Model',
+  'model.col.note': 'Note',
+
+  'eval.title': 'Evaluation',
+  'eval.subtitle': 'Does the whole system catch real violations on the event clips?',
+  'eval.goals': 'Goals',
+  'eval.caught': 'Events caught',
+  'eval.false': 'False alarms / 5 min',
+  'eval.delay': 'Alert delay',
+  'eval.fps': 'Live speed',
+  'eval.goal.caught': '≥ 80%',
+  'eval.goal.false': '< 1',
+  'eval.goal.delay': '< 5 s',
+  'eval.goal.fps': '≥ 10 fps',
+  'eval.met': 'Goal met',
+  'eval.notMet': 'Not yet',
+  'eval.pending': 'Not measured',
+  'eval.liveNow': 'live now',
+  'eval.noRuns': 'Not evaluated yet',
+  'eval.noRunsHint': 'Run the three commands below after training. The page reads evaluation/results.json.',
+  'eval.compare': 'Time logic vs raw per-frame alerts',
+  'eval.compareHint': 'Why the tracking layer matters: same model, with and without the time logic.',
+  'eval.runs': 'Runs',
+  'eval.col.run': 'Run',
+  'eval.col.alerts': 'Alerts',
+  'eval.generated': 'Scored {when} · {min} min of video · {clips} clips',
+  'eval.copy': 'Copy',
+  'eval.copied': 'Copied',
+
+  'sys.title': 'System',
+  'sys.subtitle': 'Health of the camera, model and server, and the live violation settings.',
+  'sys.server': 'Server',
+  'sys.camera': 'Camera',
+  'sys.model': 'Model',
+  'sys.speed': 'Speed',
+  'sys.connected': 'Connected',
+  'sys.disconnected': 'Disconnected',
+  'sys.loaded': 'Loaded',
+  'sys.notLoaded': 'Not loaded',
+  'sys.frameAge': 'Last frame {s}s ago',
+  'sys.version': 'Version {v}',
+  'sys.error': 'Error',
+  'sys.rules': 'Violation rules',
+  'sys.rulesHint': 'Set with CHECK_* in backend/.env. Tune them on the event clips, then freeze them.',
+  'sys.api': 'API',
+
+  'cfg.item_conf': 'Item boxes below this confidence are ignored',
+  'cfg.window_s': 'Memory window per person per item',
+  'cfg.violation_ratio': 'Share of visible frames saying "not wearing" to raise a violation',
+  'cfg.ok_ratio': 'Share of visible frames saying "wearing" to count as OK',
+  'cfg.min_visibility': 'Item must be seen in this share of the window, else "not visible"',
+  'cfg.decide_after_s': 'History a new person needs before any decision',
+  'cfg.cooldown_s': 'At most one alert per person per item in this time',
+  'cfg.assign_min_overlap': 'How much of an item box must sit inside a person box',
+  'cfg.lost_after_s': 'Unseen this long → person counts as lost',
+  'cfg.reentry_s': 'A new track near a lost person within this time is the same person',
+  'cfg.reentry_dist': 'Max distance for that match (share of the frame diagonal)',
+
+  'empty.offline': 'Can’t reach the backend',
+  'retry': 'Retry',
+  'close': 'Close',
+  'sec': '{n}s',
+  'min': '{n} min',
+};
+
+const ar = {
+  'app.title': 'لوحة شيّك',
+  'nav.live': 'مباشر',
+  'nav.alerts': 'التنبيهات',
+  'nav.insights': 'التحليلات',
+  'nav.model': 'النموذج',
+  'nav.evaluation': 'التقييم',
+  'nav.system': 'النظام',
+  'nav.section.monitor': 'المراقبة',
+  'nav.section.project': 'المشروع',
+
+  'conn.live': 'مباشر',
+  'conn.connecting': 'جارٍ الاتصال…',
+  'conn.offline': 'الخادم غير متصل',
+  'conn.offlineHint': 'شغّل الخادم وستعيد الصفحة الاتصال تلقائيًا.',
+  'demo.badge': 'وضع العرض',
+  'demo.hint': 'اكتشافات تجريبية: لم يُحمَّل نموذج مدرّب بعد.',
+  'lang.toggle': 'English',
+  'sound.on': 'صوت التنبيه مفعّل',
+  'sound.off': 'صوت التنبيه متوقف',
+
+  'item.mask': 'الكمامة',
+  'item.hairnet': 'غطاء الشعر',
+  'item.gloves': 'القفازات',
+  'state.ok': 'سليم',
+  'state.violation': 'مخالفة',
+  'state.unknown': 'غير ظاهر',
+  'change.removed': 'نُزعت',
+  'change.missing': 'غير موجودة',
+  'change.put_back': 'أُعيدت',
+  'person': 'الشخص {id}',
+  'all': 'الكل',
+
+  'live.camera': 'الكاميرا',
+  'live.streamOff': 'لا يوجد فيديو',
+  'live.streamOffHint': 'يبدأ البث عندما يتوفر للخادم كاميرا ونموذج اكتشاف.',
+  'live.people': 'الأشخاص في الصورة',
+  'live.openViolations': 'مخالفات مفتوحة',
+  'live.alertsToday': 'تنبيهات آخر 24 ساعة',
+  'live.fps': 'إطار / ثانية',
+  'live.staff': 'الموظفون أمام الكاميرا',
+  'live.nobody': 'لا أحد في الصورة',
+  'live.nobodyHint': 'يظهر الأشخاص هنا بمجرد أن تراهم الكاميرا.',
+  'live.feed': 'التنبيهات المباشرة',
+  'live.feedEmpty': 'لا توجد تنبيهات بعد',
+  'live.feedEmptyHint': 'تظهر المخالفات الجديدة هنا فورًا.',
+  'live.allClear': 'كل شيء سليم',
+  'live.needsAttention': 'يحتاج انتباه',
+  'live.seeAll': 'كل التنبيهات',
+
+  'toast.violation': '{person}: {item} {change}',
+  'toast.resolved': '{person}: أُعيدت {item} بعد {s} ث',
+
+  'alerts.title': 'سجل التنبيهات',
+  'alerts.subtitle': 'كل مخالفة رصدها النظام مع الإطار الذي رآه.',
+  'alerts.item': 'العنصر',
+  'alerts.status': 'الحالة',
+  'alerts.range': 'الفترة',
+  'alerts.open': 'مفتوحة',
+  'alerts.resolved': 'تمت معالجتها',
+  'alerts.export': 'تصدير CSV',
+  'alerts.col.snapshot': 'الإطار',
+  'alerts.col.time': 'الوقت',
+  'alerts.col.person': 'الشخص',
+  'alerts.col.item': 'العنصر',
+  'alerts.col.what': 'ما حدث',
+  'alerts.col.status': 'الحالة',
+  'alerts.fixedIn': 'عولجت خلال {d}',
+  'alerts.stillOpen': 'ما زالت مفتوحة',
+  'alerts.none': 'لا توجد تنبيهات مطابقة',
+  'alerts.noneHint': 'جرّب فترة أطول أو أزل عوامل التصفية.',
+  'alerts.count': '{n} تنبيه',
+  'alerts.noSnapshot': 'لا يوجد إطار',
+
+  'range.1': 'اليوم',
+  'range.7': '7 أيام',
+  'range.30': '30 يومًا',
+  'range.all': 'كل الوقت',
+
+  'insights.title': 'التحليلات',
+  'insights.subtitle': 'أنماط التنبيهات لتوجيه التدريب والإشراف.',
+  'insights.total': 'التنبيهات',
+  'insights.open': 'مفتوحة الآن',
+  'insights.meanFix': 'متوسط وقت المعالجة',
+  'insights.topItem': 'الأكثر إهمالًا',
+  'insights.byDay': 'التنبيهات يوميًا',
+  'insights.byHour': 'التنبيهات حسب ساعة اليوم',
+  'insights.byItem': 'حسب العنصر',
+  'insights.compliance': 'نسبة وقت الالتزام',
+  'insights.complianceHint': 'نسبة الوقت الذي رُئي فيه كل عنصر ملبوسًا منذ تشغيل الخادم ({since}).',
+  'insights.notSeen': 'غير ظاهر {pct}',
+  'insights.noData': 'لا توجد تنبيهات في هذه الفترة',
+  'insights.noDataHint': 'تمتلئ الرسوم كلما رصد النظام تنبيهات.',
+  'insights.removedVsMissing': '{removed} نُزعت · {missing} غير موجودة عند الدخول',
+  'insights.fixAvg': 'متوسط المعالجة {d}',
+
+  'model.title': 'النموذج',
+  'model.subtitle': 'نموذج الاكتشاف: جولات التدريب، ودقة كل فئة، والبيانات خلفه.',
+  'model.running': 'يعمل الآن',
+  'model.detector': 'الكاشف',
+  'model.weights': 'الأوزان',
+  'model.imgsz': 'حجم الصورة',
+  'model.device': 'الجهاز',
+  'model.fake': 'تجريبي (عرض)',
+  'model.yolo': 'YOLO + ByteTrack',
+  'model.classes': 'الفئات التي يكتشفها',
+  'model.dataset': 'البيانات المسجلة',
+  'model.datasetHint': 'من data/recording_log.csv',
+  'model.clips': 'مقطع',
+  'model.bySplit': 'حسب التقسيم',
+  'model.byType': 'حسب نوع المقطع',
+  'model.noRuns': 'لا توجد جولات تدريب بعد',
+  'model.noRunsHint': 'تظهر النتائج هنا تلقائيًا بعد أن يسجّل training/train.py أول جولة.',
+  'model.step1': 'سجّل المقاطع وأضفها إلى data/recording_log.csv',
+  'model.step2': 'وسّم الصور في Roboflow حسب data/labeling_rules.md',
+  'model.step3': 'درّب على Colab باستخدام training/train_colab.ipynb',
+  'model.step4': 'ارفع training/results.json: تتحدث هذه الصفحة',
+  'model.latest': 'آخر جولة',
+  'model.map50': 'mAP50',
+  'model.map5095': 'mAP50-95',
+  'model.precision': 'الدقة',
+  'model.recall': 'الاستدعاء',
+  'model.vsPrev': '{d} مقارنة بالسابقة',
+  'model.perClass': 'الدقة لكل فئة (mAP50، فيديوهات الاختبار)',
+  'model.weak': 'ضعيفة: وسّم المزيد منها',
+  'model.progress': 'كيف تحسّن النموذج',
+  'model.runs': 'كل الجولات',
+  'model.col.date': 'التاريخ',
+  'model.col.dataset': 'البيانات',
+  'model.col.model': 'النموذج',
+  'model.col.note': 'ملاحظة',
+
+  'eval.title': 'التقييم',
+  'eval.subtitle': 'هل يرصد النظام كاملًا المخالفات الحقيقية في مقاطع الأحداث؟',
+  'eval.goals': 'الأهداف',
+  'eval.caught': 'الأحداث المرصودة',
+  'eval.false': 'إنذارات خاطئة / 5 دقائق',
+  'eval.delay': 'تأخر التنبيه',
+  'eval.fps': 'السرعة المباشرة',
+  'eval.goal.caught': '≥ 80%',
+  'eval.goal.false': '< 1',
+  'eval.goal.delay': '< 5 ث',
+  'eval.goal.fps': '≥ 10 إطارات/ث',
+  'eval.met': 'تحقق الهدف',
+  'eval.notMet': 'لم يتحقق بعد',
+  'eval.pending': 'لم يُقَس',
+  'eval.liveNow': 'مباشر الآن',
+  'eval.noRuns': 'لم يُجرَ التقييم بعد',
+  'eval.noRunsHint': 'نفّذ الأوامر الثلاثة أدناه بعد التدريب. تقرأ الصفحة evaluation/results.json.',
+  'eval.compare': 'منطق الوقت مقابل التنبيه لكل إطار',
+  'eval.compareHint': 'لماذا تهم طبقة التتبع: النموذج نفسه، مع منطق الوقت وبدونه.',
+  'eval.runs': 'الجولات',
+  'eval.col.run': 'الجولة',
+  'eval.col.alerts': 'التنبيهات',
+  'eval.generated': 'قُيّم {when} · {min} دقيقة فيديو · {clips} مقاطع',
+  'eval.copy': 'نسخ',
+  'eval.copied': 'نُسخ',
+
+  'sys.title': 'النظام',
+  'sys.subtitle': 'حالة الكاميرا والنموذج والخادم، وإعدادات رصد المخالفات.',
+  'sys.server': 'الخادم',
+  'sys.camera': 'الكاميرا',
+  'sys.model': 'النموذج',
+  'sys.speed': 'السرعة',
+  'sys.connected': 'متصلة',
+  'sys.disconnected': 'غير متصلة',
+  'sys.loaded': 'محمّل',
+  'sys.notLoaded': 'غير محمّل',
+  'sys.frameAge': 'آخر إطار قبل {s} ث',
+  'sys.version': 'الإصدار {v}',
+  'sys.error': 'خطأ',
+  'sys.rules': 'قواعد المخالفات',
+  'sys.rulesHint': 'تُضبط عبر CHECK_* في backend/.env. اضبطها على مقاطع الأحداث ثم ثبّتها.',
+  'sys.api': 'الواجهة البرمجية',
+
+  'cfg.item_conf': 'تُهمل صناديق العناصر الأقل من هذه الثقة',
+  'cfg.window_s': 'نافذة الذاكرة لكل شخص ولكل عنصر',
+  'cfg.violation_ratio': 'نسبة الإطارات الظاهرة التي تقول "غير ملبوس" لرفع مخالفة',
+  'cfg.ok_ratio': 'نسبة الإطارات الظاهرة التي تقول "ملبوس" لاعتباره سليمًا',
+  'cfg.min_visibility': 'يجب أن يظهر العنصر في هذه النسبة من النافذة، وإلا فهو "غير ظاهر"',
+  'cfg.decide_after_s': 'المدة التي يحتاجها الشخص الجديد قبل أي حكم',
+  'cfg.cooldown_s': 'تنبيه واحد كحد أقصى لكل شخص ولكل عنصر خلال هذه المدة',
+  'cfg.assign_min_overlap': 'الجزء الذي يجب أن يقع من صندوق العنصر داخل صندوق الشخص',
+  'cfg.lost_after_s': 'إذا غاب الشخص هذه المدة يُعتبر مفقودًا',
+  'cfg.reentry_s': 'المسار الجديد القريب من شخص مفقود خلال هذه المدة هو الشخص نفسه',
+  'cfg.reentry_dist': 'أقصى مسافة لهذا التطابق (نسبة من قطر الإطار)',
+
+  'empty.offline': 'تعذّر الوصول إلى الخادم',
+  'retry': 'إعادة المحاولة',
+  'close': 'إغلاق',
+  'sec': '{n} ث',
+  'min': '{n} د',
+};
+
+const DICTS = { en, ar };
+const I18n = createContext(null);
+
+export function I18nProvider({ children }) {
+  const [lang, setLang] = useState(() => (load('check.lang') === 'ar' ? 'ar' : 'en'));
+
+  useEffect(() => {
+    const el = document.documentElement;
+    el.lang = lang;
+    el.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.title = DICTS[lang]['app.title'];
+    save('check.lang', lang);
+  }, [lang]);
+
+  const t = useCallback((key, vars) => {
+    let s = DICTS[lang][key] ?? en[key] ?? key;
+    if (vars) for (const [k, v] of Object.entries(vars)) s = s.replaceAll(`{${k}}`, v);
+    return s;
+  }, [lang]);
+
+  // Western digits in both languages keep numbers easy to compare on charts.
+  const locale = lang === 'ar' ? 'ar-SA-u-nu-latn' : 'en-GB';
+  const value = useMemo(() => {
+    const nf = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
+    const num = (n) => (n == null || Number.isNaN(n) ? '–' : nf.format(n));
+    const fixed = (n, d = 2) => (n == null || Number.isNaN(n) ? '–'
+      : new Intl.NumberFormat(locale, { minimumFractionDigits: d, maximumFractionDigits: d }).format(n));
+    const pct = (n) => (n == null || Number.isNaN(n) ? '–' : `${nf.format(n)}%`);
+    const time = (iso) => new Date(iso).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const dateTime = (iso) => new Date(iso).toLocaleString(locale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const day = (iso) => new Date(`${iso}T00:00:00`).toLocaleDateString(locale, { day: 'numeric', month: 'short' });
+    const duration = (s) => {
+      if (s == null) return '–';
+      return s < 90 ? t('sec', { n: num(Math.round(s)) }) : t('min', { n: num(s / 60) });
+    };
+    const ago = (iso) => {
+      const s = (Date.now() - new Date(iso).getTime()) / 1000;
+      const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'short' });
+      if (s < 60) return rtf.format(-Math.round(s), 'second');
+      if (s < 3600) return rtf.format(-Math.round(s / 60), 'minute');
+      if (s < 86400) return rtf.format(-Math.round(s / 3600), 'hour');
+      return rtf.format(-Math.round(s / 86400), 'day');
+    };
+    return {
+      lang, setLang, t, num, fixed, pct, time, dateTime, day, duration, ago,
+      toggle: () => setLang((l) => (l === 'ar' ? 'en' : 'ar')),
+    };
+  }, [lang, locale, t]);
+
+  return <I18n.Provider value={value}>{children}</I18n.Provider>;
+}
+
+export const useI18n = () => useContext(I18n);

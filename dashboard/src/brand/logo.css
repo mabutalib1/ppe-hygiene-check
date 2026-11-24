@@ -1,0 +1,162 @@
+/*
+  شيّك: the logo, ported from shayyek-logo-animated.html.
+  Size:   font-size on .shy (10px ≈ 520px wide). The <Logo size> prop sets it.
+  Color:  --accent / --accent-glow / --ink / --sub follow the dashboard theme tokens.
+  Motion: .shy--intro plays the corners → word → check sequence once.
+          .shy--live adds the looping scan line and chip pulse (use sparingly).
+*/
+.shy {
+  --accent: var(--brand);
+  --accent-glow: color-mix(in srgb, var(--brand) 35%, transparent);
+  --ink: var(--logo-ink, var(--text));
+  --sub: var(--text-2);
+  font-family: 'Alexandria', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  direction: rtl;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.6em;
+  line-height: normal;
+}
+.shy--compact { gap: 1.6em; }
+
+.shy-frame {
+  position: relative;
+  padding: 3em 8.4em 4.2em;
+  margin-top: 5.4em;
+}
+
+.shy-corner {
+  position: absolute;
+  width: 6.4em;
+  height: 6.4em;
+}
+.shy-corner svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.shy-corner path { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; }
+.shy-corner.tr { top: 0; right: 0; --dx: 2.4em; --dy: -2.4em; }
+.shy-corner.tl { top: 0; left: 0; --dx: -2.4em; --dy: -2.4em; }
+.shy-corner.br { bottom: 0; right: 0; --dx: 2.4em; --dy: 2.4em; }
+.shy-corner.bl { bottom: 0; left: 0; --dx: -2.4em; --dy: 2.4em; }
+.shy-corner.tl svg { transform: scaleX(-1); }
+.shy-corner.br svg { transform: scaleY(-1); }
+.shy-corner.bl svg { transform: scale(-1, -1); }
+
+.shy-tick {
+  position: absolute;
+  top: 50%;
+  width: 1.6em;
+  height: 0.4em;
+  margin-top: -0.2em;
+  border-radius: 0.2em;
+  background: var(--accent);
+  opacity: 0.6;
+}
+.shy-tick.r { right: -0.6em; }
+.shy-tick.l { left: -0.6em; }
+
+.shy-word {
+  display: block;
+  font-size: 18.4em;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.shy-chip {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 1.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.9em 1.4em;
+  border-radius: 1.4em;
+  background: var(--accent);
+  transform-origin: bottom right;
+}
+.shy-chip svg { display: block; width: 2.4em; height: 2.4em; }
+.shy-check {
+  fill: none;
+  stroke: var(--brand-ink);
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.shy-scan {
+  position: absolute;
+  top: 50%;
+  right: 2.2em;
+  left: 2.2em;
+  height: 0.3em;
+  border-radius: 0.2em;
+  background: var(--accent);
+  box-shadow: 0 0 1.6em var(--accent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.shy-tag { display: flex; flex-direction: column; align-items: center; gap: 0.8em; }
+.shy-line { font-size: 2.8em; font-weight: 500; color: var(--sub); }
+.shy-mono {
+  direction: ltr;
+  font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  font-size: 1.4em;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  color: var(--sub);
+  white-space: nowrap;
+}
+
+/* ---- intro: plays once ---- */
+.shy--intro .shy-corner { animation: shy-lock 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+.shy--intro .shy-corner.tl { animation-delay: 0.08s; }
+.shy--intro .shy-corner.br { animation-delay: 0.16s; }
+.shy--intro .shy-corner.bl { animation-delay: 0.24s; }
+.shy--intro .shy-tick { animation: shy-fade-tick 0.4s 0.5s both; }
+.shy--intro .shy-word { animation: shy-word 0.6s 0.35s both; }
+.shy--intro .shy-chip { animation: shy-pop 0.5s 0.8s cubic-bezier(0.2, 0.9, 0.3, 1.4) both; }
+.shy--intro .shy-check { stroke-dasharray: 24; stroke-dashoffset: 24; animation: shy-draw 0.45s 1.05s ease-out forwards; }
+.shy--intro .shy-tag { animation: shy-fade 0.6s 1.1s both; }
+
+/* ---- live: looping scan + pulse ---- */
+.shy--live .shy-scan { animation: shy-scan 2.6s 1.3s ease-in-out infinite alternate; }
+.shy--live .shy-chip { animation: shy-pop 0.5s 0.8s cubic-bezier(0.2, 0.9, 0.3, 1.4) both, shy-pulse 2.6s 1.6s ease-out infinite; }
+
+@keyframes shy-lock {
+  from { opacity: 0; transform: translate(var(--dx), var(--dy)); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes shy-word {
+  from { opacity: 0; filter: blur(0.6em); }
+  to   { opacity: 1; filter: none; }
+}
+@keyframes shy-pop {
+  from { opacity: 0; transform: scale(0.4); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes shy-pulse {
+  0%   { box-shadow: 0 0 0 0 var(--accent-glow); }
+  70%  { box-shadow: 0 0 0 1em rgba(0, 0, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+}
+@keyframes shy-draw { to { stroke-dashoffset: 0; } }
+@keyframes shy-scan {
+  0%   { top: 14%; opacity: 0.55; }
+  100% { top: 82%; opacity: 0.55; }
+}
+@keyframes shy-fade {
+  from { opacity: 0; transform: translateY(0.6em); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes shy-fade-tick {
+  from { opacity: 0; }
+  to   { opacity: 0.6; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shy * { animation: none !important; }
+  .shy-check { stroke-dashoffset: 0 !important; }
+  .shy-scan { display: none; }
+}

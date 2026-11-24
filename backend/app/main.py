@@ -2,7 +2,9 @@
 
     uvicorn app.main:app --host 0.0.0.0 --port 8000
 
-Endpoints: GET /health, GET /stream (MJPEG), WS /ws, GET /events, GET /snapshots/{id}.jpg
+Endpoints: GET /health, GET /stream (MJPEG), WS /ws, GET /events, GET /snapshots/{id}.jpg,
+GET /stats, GET /config, GET /training/results, GET /evaluation/results, GET /dataset/summary.
+The web dashboard (dashboard/dist) is served at /dashboard when it has been built.
 """
 from __future__ import annotations
 
@@ -11,11 +13,14 @@ import logging
 import re
 import time
 from contextlib import asynccontextmanager
+from dataclasses import asdict
+from datetime import datetime, timedelta
 from typing import Set
 
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 
 from . import __version__
 from .camera import LatestFrameReader
@@ -23,7 +28,9 @@ from .config import Settings
 from .detector import build_detector
 from .engine import ViolationEngine
 from .processor import Processor
+from .results import dataset_summary, evaluation_results, redact_source, training_results
 from .store import EventStore
+from .types import ITEMS
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("check")
@@ -85,7 +92,7 @@ async def lifespan(app: FastAPI):
         processor.start()
 
     app.state.__dict__.update(settings=s, store=store, camera=camera, hub=hub,
-                              processor=processor, model_error=model_error)
+                              processor=processor, model_error=model_error, started=time.time())
     log.info("Check backend %s started (detector=%s, camera=%s)", __version__, s.detector,
              s.camera_source)
     yield
@@ -107,7 +114,8 @@ def health():
     return {
         "ok": p is not None and st.camera.connected and (p.last_error is None),
         "version": __version__,
-        "camera": {"source": st.settings.camera_source, "connected": st.camera.connected,
+        "camera": {"source": redact_source(st.settings.camera_source), "name": st.settings.camera_name,
+                   "connected": st.camera.connected,
                    "last_frame_age_s": round(time.time() - frame_t, 2) if frame_t else None},
         "model": {"detector": st.settings.detector, "loaded": p is not None,
                   "error": st.model_error},
@@ -155,8 +163,74 @@ async def ws(websocket: WebSocket):
 
 
 @app.get("/events")
-def events(limit: int = Query(50, ge=1, le=500)):
-    return app.state.store.recent(limit)
+def events(limit: int = Query(50, ge=1, le=500), item: str | None = None,
+           status: str | None = Query(None, pattern="^(open|resolved)$"),
+           days: float | None = Query(None, gt=0, le=366)):
+    if item is not None and item not in ITEMS:
+        raise HTTPException(400, f"item must be one of {list(ITEMS)}")
+    since = _since(days) if days else None
+    return app.state.store.query(limit, item=item, since=since, status=status)
+
+
+def _since(days: float) -> str:
+    return (datetime.now().astimezone() - timedelta(days=days)).isoformat(timespec="seconds")
+
+
+@app.get("/stats")
+def stats(days: float = Query(7, gt=0, le=366)):
+    """Event aggregates for the last `days`, plus time-in-compliance since the server started."""
+    out = app.state.store.stats(_since(days))
+    p = app.state.processor
+    out["days"] = days
+    out["session"] = {
+        "started": datetime.fromtimestamp(app.state.started).astimezone().isoformat(timespec="seconds"),
+        "compliance": p.compliance if p else {i: {"ok": 0, "violation": 0, "unknown": 0} for i in ITEMS},
+    }
+    return out
+
+
+@app.get("/config")
+def config():
+    s = app.state.settings
+    return {
+        "camera": {"source": redact_source(s.camera_source), "name": s.camera_name,
+                   "loop_video": s.loop_video},
+        "model": {"detector": s.detector, "weights": s.weights.rsplit("/", 1)[-1],
+                  "device": s.device or "auto", "imgsz": s.imgsz, "target_fps": s.target_fps},
+        "engine": asdict(s.engine),
+        "items": list(ITEMS),
+        "version": __version__,
+    }
+
+
+@app.get("/training/results")
+def training():
+    return training_results(app.state.settings.training_results)
+
+
+@app.get("/evaluation/results")
+def evaluation():
+    return evaluation_results(app.state.settings.evaluation_results)
+
+
+@app.get("/dataset/summary")
+def dataset():
+    return dataset_summary(app.state.settings.recording_log)
+
+
+def _mount_dashboard() -> None:
+    dist = Settings.from_env().dashboard_dir
+    if (dist / "index.html").exists():
+        app.mount("/dashboard", StaticFiles(directory=dist, html=True), name="dashboard")
+
+        @app.get("/", include_in_schema=False)
+        def root():
+            return RedirectResponse("/dashboard/")
+    else:
+        log.info("dashboard not built (%s); run `npm run build` in dashboard/", dist)
+
+
+_mount_dashboard()
 
 
 @app.get("/snapshots/{event_id}.jpg")

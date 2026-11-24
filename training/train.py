@@ -1,5 +1,5 @@
 """Download a Roboflow dataset version, fine-tune YOLO, score on the test videos,
-and append a row to results.md.
+and append a row to results.md (for slides) and results.json (for the dashboard).
 
     export ROBOFLOW_API_KEY=xxxx
     python training/train.py --workspace our-workspace --project check-hygiene --version 3
@@ -9,12 +9,15 @@ and append a row to results.md.
 Runs best on a GPU (Colab / Kaggle). See train_colab.ipynb.
 """
 import argparse
+import json
 import os
 from datetime import date
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results.md"
+RESULTS_JSON = HERE / "results.json"
+CLASSES = ["person", "hairnet", "no_hairnet", "mask", "no_mask", "gloves", "no_gloves"]
 
 
 def main():
@@ -64,6 +67,8 @@ def main():
     m = best.val(data=f"{ds.location}/data.yaml", split="test", imgsz=args.imgsz)
     per_class = {m.names[int(c)]: float(ap50) for c, ap50 in zip(m.box.ap_class_index, m.box.ap50)}
     append_result(args, run_name, float(m.box.map50), float(m.box.map), per_class)
+    append_json(args, run_name, float(m.box.map50), float(m.box.map), per_class,
+                precision=float(m.box.mp), recall=float(m.box.mr))
 
     if args.export_onnx:
         best.export(format="onnx", imgsz=args.imgsz)
@@ -71,13 +76,34 @@ def main():
 
 
 def append_result(args, run_name, map50, map5095, per_class):
-    cols = ["person", "hairnet", "no_hairnet", "mask", "no_mask", "gloves", "no_gloves"]
+    cols = CLASSES
     row = [str(date.today()), f"v{args.version}", Path(args.model).stem, str(args.imgsz),
            f"{map50:.3f}", f"{map5095:.3f}"] + \
           [f"{per_class[c]:.2f}" if c in per_class else "-" for c in cols] + [args.note or run_name]
     with RESULTS.open("a") as f:
         f.write("| " + " | ".join(row) + " |\n")
     print("Appended to", RESULTS)
+
+
+
+def append_json(args, run_name, map50, map5095, per_class, precision, recall):
+    runs = json.loads(RESULTS_JSON.read_text()) if RESULTS_JSON.exists() else []
+    runs.append({
+        "date": str(date.today()),
+        "run": run_name,
+        "dataset": f"v{args.version}",
+        "model": Path(args.model).stem,
+        "imgsz": args.imgsz,
+        "epochs": args.epochs,
+        "map50": round(map50, 4),
+        "map50_95": round(map5095, 4),
+        "precision": round(precision, 4),
+        "recall": round(recall, 4),
+        "per_class": {c: round(per_class[c], 4) for c in CLASSES if c in per_class},
+        "note": args.note or run_name,
+    })
+    RESULTS_JSON.write_text(json.dumps(runs, indent=2) + "\n")
+    print("Appended to", RESULTS_JSON)
 
 
 if __name__ == "__main__":

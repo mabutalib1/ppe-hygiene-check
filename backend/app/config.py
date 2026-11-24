@@ -5,6 +5,8 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
+PROJECT_DIR = Path(__file__).resolve().parents[2]  # repo root when run from a checkout
+
 
 def load_dotenv(path: Path = Path(".env")) -> None:
     """Minimal .env loader (KEY=VALUE, '#' comments). Real env vars win."""
@@ -62,6 +64,9 @@ class Settings:
     loop_video: bool = True            # replay video files (demo backup)
     data_dir: Path = Path("runtime")
     status_hz: float = 2.0
+    # dashboard + the result files it shows (missing files → empty states)
+    project_dir: Path = PROJECT_DIR
+    dashboard_dir: Path = PROJECT_DIR / "dashboard" / "dist"
     engine: EngineConfig = field(default_factory=EngineConfig)
 
     @classmethod
@@ -78,12 +83,26 @@ class Settings:
         s.loop_video = _env("LOOP_VIDEO", s.loop_video)
         s.data_dir = Path(_env("DATA_DIR", str(s.data_dir)))
         s.status_hz = _env("STATUS_HZ", s.status_hz)
+        s.project_dir = Path(_env("PROJECT_DIR", str(s.project_dir)))
+        s.dashboard_dir = Path(_env("DASHBOARD_DIR", str(s.project_dir / "dashboard" / "dist")))
         s.engine = EngineConfig.from_env()
         return s
 
     @property
     def db_path(self) -> Path:
         return self.data_dir / "events.db"
+
+    @property
+    def training_results(self) -> Path:
+        return self.project_dir / "training" / "results.json"
+
+    @property
+    def evaluation_results(self) -> Path:
+        return self.project_dir / "evaluation" / "results.json"
+
+    @property
+    def recording_log(self) -> Path:
+        return self.project_dir / "data" / "recording_log.csv"
 
     @property
     def snapshot_dir(self) -> Path:

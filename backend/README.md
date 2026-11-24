@@ -13,7 +13,8 @@ camera → LatestFrameReader → YOLO + ByteTrack → ViolationEngine → MJPEG 
 | `app/engine.py` | Item→person assignment, 3 s window vote, events, cooldown, ID-switch guard |
 | `app/processor.py` | The processing loop |
 | `app/draw.py` | Boxes: green OK, red violation, grey unknown |
-| `app/store.py` | SQLite events + snapshots |
+| `app/store.py` | SQLite events + snapshots, filters and aggregates for the dashboard |
+| `app/results.py` | Reads training / evaluation / recording-log files for the dashboard |
 | `app/main.py` | Endpoints |
 | `app/bytetrack_check.yaml` | Tracker thresholds aligned with `CHECK_ITEM_CONF` |
 
@@ -33,13 +34,15 @@ DETECTOR=yolo WEIGHTS=weights/best.pt CAMERA_SOURCE=http://192.168.1.20:8080/vid
   uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-Open `http://<laptop-ip>:8000/stream` in a browser to see the annotated video.
+Open `http://<laptop-ip>:8000/dashboard/` for the web dashboard (build it once: see [`../dashboard/README.md`](../dashboard/README.md)), or `/stream` for the bare annotated video.
 
 ### Docker
 
+Build from the **repo root**: the image also builds the dashboard and copies the result files it shows.
+
 ```bash
-docker build -t check-backend .
-docker run --env-file .env -p 8000:8000 check-backend
+docker build -f backend/Dockerfile -t check .
+docker run --env-file backend/.env -p 8000:8000 check     # → http://localhost:8000
 ```
 
 A webcam inside Docker needs `--device /dev/video0` (Linux only). For the demo, prefer running natively or use an RTSP/HTTP camera source.
@@ -51,8 +54,14 @@ A webcam inside Docker needs `--device /dev/video0` (Linux only). For the demo, 
 | `GET /health` | Server, camera and model status, fps |
 | `GET /stream` | Annotated live video (MJPEG) |
 | `WS /ws` | `status` messages ~2×/s, plus `violation` and `resolved` events instantly |
-| `GET /events?limit=50` | Event history, newest first |
+| `GET /events?limit=50` | Event history, newest first. Optional `item=gloves`, `status=open\|resolved`, `days=7` |
 | `GET /snapshots/{event_id}.jpg` | Saved frame for one event |
+| `GET /stats?days=7` | Counts by item / hour / day, open now, time to fix, time in compliance since start |
+| `GET /config` | Camera, model and `CHECK_*` settings (camera passwords hidden) |
+| `GET /training/results` | `training/results.json` (empty list until the first run) |
+| `GET /evaluation/results` | `evaluation/results.json` (empty until scored) |
+| `GET /dataset/summary` | Clip counts from `data/recording_log.csv` |
+| `GET /dashboard/` | The web dashboard, when `dashboard/dist` is built |
 
 Messages:
 
