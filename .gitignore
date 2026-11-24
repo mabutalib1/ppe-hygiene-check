@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Data & models (never commit images: privacy)
+data/raw/
+data/merged/
+data/local/
+*.jpg
+*.jpeg
+*.png
+*.mp4
+runs/
+weights/
+*.pt
+*.onnx
+reports/
+
+# Env
+.env
+.DS_Store
+.ipynb_checkpoints/

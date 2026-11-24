@@ -1,0 +1,13 @@
+# Which checklist items are required, per role.
+# Matches the restaurant's manual checklist: nails, hair, facemask, hairnet, gloves, uniform.
+thresholds:
+  pass: 0.60          # confidence needed to mark PASS/FAIL
+  review_below: 0.40  # under this, result becomes NEEDS_REVIEW
+
+roles:
+  kitchen:
+    required: [facemask, hairnet, hair, gloves, uniform, nails]
+  barista:
+    required: [facemask, hairnet, hair, gloves, uniform, nails]
+  cashier:
+    required: [facemask, uniform, nails]

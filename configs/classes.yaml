@@ -1,0 +1,40 @@
+# Unified detector classes. Every source dataset is remapped into these.
+classes:
+  0: person
+  1: mask
+  2: no_mask
+  3: incorrect_mask
+  4: hairnet
+  5: no_hairnet
+  6: glove
+  7: bare_hand
+
+# Source label (lowercased) -> unified label. Labels not listed are dropped.
+# Extend this when you add a dataset; check each dataset's labels first.
+aliases:
+  person: person
+  human: person
+  mask: mask
+  correct_mask: mask
+  "correct mask": mask
+  face_mask: mask
+  no_mask: no_mask
+  no-mask: no_mask
+  incorrect_mask: incorrect_mask
+  hairnet: hairnet
+  hair-net: hairnet
+  hair_net: hairnet
+  with_hairnet: hairnet
+  headnet: hairnet
+  no_hairnet: no_hairnet
+  without_hairnet: no_hairnet
+  no_hat-hairnet: no_hairnet
+  glove: glove
+  gloves: glove
+  gloved_hand: glove
+  no_glove: bare_hand
+  no_gloves: bare_hand
+  no-gloves: bare_hand
+  bare_hand: bare_hand
+  bare-hand: bare_hand
+  "bare hand": bare_hand
