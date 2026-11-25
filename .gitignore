@@ -47,3 +47,6 @@ ppe-1/
 
 # Local Claude Code settings (machine-specific paths)
 .claude/
+
+# files uploaded to GitHub Releases (model + demo video), not git
+release-assets/

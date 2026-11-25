@@ -1,22 +1,37 @@
 # Render Blueprint: deploys the backend + web dashboard as one Docker web service.
 # On Render: New → Blueprint → pick this repo. Then open https://<service>.onrender.com/
 #
-# This is the ONLINE DEMO: scripted detections on a synthetic camera, because a
-# cloud server can't see the kitchen's camera on the local network. The real system
-# runs on the laptop next to the camera (see backend/README.md).
+# This is the ONLINE DEMO: the real model (v1) running on a recorded clip that
+# loops, because a cloud server can't see the kitchen's camera on the local
+# network. The real system runs on the laptop next to the camera (see backend/README.md).
+#
+# best.pt and demo.mp4 are not in git: they are assets of the GitHub Release
+# "v1" and are downloaded once at startup. No GPU here, so expect ~3-5 fps.
 services:
   - type: web
     name: shayyek
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
-    plan: free
+    plan: standard            # 2 GB RAM: PyTorch + two YOLO models don't fit the free 512 MB
     healthCheckPath: /health
     autoDeploy: true
     envVars:
       - key: DETECTOR
-        value: fake
+        value: yolo
+      - key: WEIGHTS
+        value: weights/best.pt
+      - key: WEIGHTS_URL
+        value: https://github.com/mabutalib1/ppe-hygiene-check/releases/download/v1/best.pt
+      - key: PERSON_WEIGHTS
+        value: yolo26n.pt
       - key: CAMERA_SOURCE
-        value: synthetic
+        value: media/demo.mp4
+      - key: CAMERA_SOURCE_URL
+        value: https://github.com/mabutalib1/ppe-hygiene-check/releases/download/v1/demo.mp4
+      - key: LOOP_VIDEO
+        value: "true"
+      - key: DEVICE
+        value: cpu
       - key: CAMERA_NAME
         value: kitchen-1

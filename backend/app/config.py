@@ -59,6 +59,9 @@ class Settings:
     detector: str = "yolo"             # "yolo" or "fake" (scripted detections, no model needed)
     weights: str = "weights/best.pt"
     person_weights: str = "yolo26n.pt" # stock COCO model for people when `weights` has no person class
+    # cloud deploys: download WEIGHTS / CAMERA_SOURCE from these URLs at startup (GitHub Releases)
+    weights_url: str = ""
+    camera_source_url: str = ""
     device: str = ""                   # "" = auto, "cpu", "0" for first GPU
     imgsz: int = 640
     target_fps: float = 10.0
@@ -79,6 +82,8 @@ class Settings:
         s.detector = _env("DETECTOR", s.detector)
         s.weights = _env("WEIGHTS", s.weights)
         s.person_weights = _env("PERSON_WEIGHTS", s.person_weights)
+        s.weights_url = _env("WEIGHTS_URL", s.weights_url)
+        s.camera_source_url = _env("CAMERA_SOURCE_URL", s.camera_source_url)
         s.device = _env("DEVICE", s.device)
         s.imgsz = _env("IMGSZ", s.imgsz)
         s.target_fps = _env("TARGET_FPS", s.target_fps)

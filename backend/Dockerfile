@@ -25,8 +25,11 @@ RUN pip install --no-cache-dir torch torchvision --index-url https://download.py
     && pip install --no-cache-dir -r requirements.txt
 
 COPY backend/app ./app
-# weights are not in git: download best.pt / best.onnx from GitHub Releases into backend/weights
+# weights are not in git: put best.pt in backend/weights before building, or set
+# WEIGHTS_URL (and CAMERA_SOURCE_URL for a demo video) to fetch them at startup
 COPY backend/weights ./weights
+# stock COCO model that tracks people when our weights have no person class
+RUN python -c "from ultralytics import YOLO; YOLO('yolo26n.pt')"
 COPY --from=dashboard /dash/dist ./dashboard
 # result files the dashboard's Model / Evaluation pages read (missing ones → empty states)
 COPY training/ ./project/training/

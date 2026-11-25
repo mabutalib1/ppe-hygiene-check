@@ -23,6 +23,7 @@ from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import __version__
+from .assets import fetch_all
 from .camera import LatestFrameReader
 from .config import Settings
 from .detector import build_detector
@@ -75,6 +76,7 @@ async def lifespan(app: FastAPI):
                              event_id_start=store.next_event_number())
     model_error = None
     try:
+        fetch_all(s)  # model / demo video from GitHub Releases on cloud hosts
         detector = build_detector(s)
     except Exception as e:
         log.error("could not load detector: %s", e)
