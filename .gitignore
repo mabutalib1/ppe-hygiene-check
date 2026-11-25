@@ -40,3 +40,10 @@ node_modules/
 .ipynb_checkpoints/
 .vscode/
 .idea/
+
+# Roboflow dataset downloads (images + labels live in Roboflow, not git)
+ppe-1/
+/*-[0-9]*/
+
+# Local Claude Code settings (machine-specific paths)
+.claude/

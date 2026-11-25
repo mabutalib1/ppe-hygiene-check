@@ -1,15 +1,9 @@
-// Simple line icons for the three checked items (stroke follows currentColor).
+// Simple line icons for the checked items (stroke follows currentColor).
 const paths = {
   mask: (
     <>
       <path d="M4 9.5c2.5-1.2 5.2-1.8 8-1.8s5.5.6 8 1.8v3.2c0 3.6-3.6 6.3-8 6.3s-8-2.7-8-6.3z" />
       <path d="M4 10.5H2.5M20 10.5h1.5M8 12h8M8.5 15h7" />
-    </>
-  ),
-  hairnet: (
-    <>
-      <path d="M4 14c0-5 3.6-9 8-9s8 4 8 9" />
-      <path d="M3 14h18M8 6.5 9.5 14M16 6.5 14.5 14M12 5v9M5 10.5h14" />
     </>
   ),
   gloves: (

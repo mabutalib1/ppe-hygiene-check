@@ -9,7 +9,7 @@ camera → LatestFrameReader → YOLO + ByteTrack → ViolationEngine → MJPEG 
 | File | Role |
 |---|---|
 | `app/camera.py` | Background reader, always returns the newest frame (RTSP, webcam, file, synthetic) |
-| `app/detector.py` | `YoloDetector` (model.track + ByteTrack) and `FakeDetector` (scripted demo) |
+| `app/detector.py` | `YoloDetector` (model.track + ByteTrack) and `FakeDetector` (scripted demo). Weights without a `person` class → people are tracked by a stock COCO model (`PERSON_WEIGHTS`, default `yolo26n.pt`, downloaded on first run) and ours only finds items |
 | `app/engine.py` | Item→person assignment, 3 s window vote, events, cooldown, ID-switch guard |
 | `app/processor.py` | The processing loop |
 | `app/draw.py` | Boxes: green OK, red violation, grey unknown |
@@ -66,12 +66,12 @@ A webcam inside Docker needs `--device /dev/video0` (Linux only). For the demo, 
 Messages:
 
 ```json
-{"type": "status", "fps": 9.8, "people": [{"id": 3, "items": {"mask": "ok", "hairnet": "ok", "gloves": "violation"}}]}
+{"type": "status", "fps": 9.8, "people": [{"id": 3, "items": {"mask": "ok", "gloves": "violation"}}]}
 {"type": "violation", "event_id": "evt_0042", "person_id": 3, "item": "gloves", "change": "removed", "camera": "kitchen-1", "time": "2026-12-10T14:32:10+03:00", "snapshot_url": "/snapshots/evt_0042.jpg"}
 {"type": "resolved", "event_id": "evt_0042", "person_id": 3, "item": "gloves", "change": "put_back", "time": "2026-12-10T14:32:40+03:00", "duration_s": 30.0}
 ```
 
-`change` is `removed` (was OK, now violation), `missing` (first decision is a violation, e.g. entered without a hairnet) or `put_back`.
+`change` is `removed` (was OK, now violation), `missing` (first decision is a violation, e.g. entered without a mask) or `put_back`.
 
 ## Violation logic
 
@@ -82,7 +82,7 @@ All values come from `.env` (`CHECK_*`); defaults are the plan's starting guesse
 - Over the last 3 s: **violation** if ≥ 70% of visible frames say not wearing; **OK** if most say wearing; **unknown** if the item was visible in < 40% of frames. Unknown never alerts.
 - A new person needs 3 s of history before any decision.
 - One alert per person per item per 30 s.
-- **ID-switch guard:** a new track appearing close to a recently lost one (within 10 s) inherits that person, so an ID switch doesn't re-fire "entered without hairnet".
+- **ID-switch guard:** a new track appearing close to a recently lost one (within 10 s) inherits that person, so an ID switch doesn't re-fire "entered without a mask".
 
 ## Tests
 

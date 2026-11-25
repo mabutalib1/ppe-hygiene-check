@@ -11,14 +11,15 @@ Changes made while reviewing `implementation_plan.md`. Discuss them in the group
 | 5 | A camera tilted down sees the top of the head, so the lower face is often hidden | Expect many `unknown` mask states. Record top-down hard cases (looking down at the counter). |
 | 6 | The tracker and the violation logic could use different confidence thresholds | `backend/app/bytetrack_check.yaml` sets `track_high_thresh` / `new_track_thresh` to 0.40 = `CHECK_ITEM_CONF`. |
 | 7 | Which items does the system check? | **Scope cut to gloves, hairnet, mask** (2026-11-24). `uniform` / `no_uniform` removed: 7 classes instead of 9. Uniform stays a manual check. The plan's staff-vs-customer idea (uniform = staff) no longer has a signal. |
+| 8 | Our labeled dataset (Roboflow `ppe-vaqlv` v1) has only `gloves`, `no_gloves`, `mask`, `no_mask`: no `person`, no hairnet | **Hairnet dropped** (2026-11-25): the system checks gloves and mask only; hairnet stays a manual check. **People come from a stock COCO model**: when the weights have no `person` class, `backend/app/detector.py` tracks people with `yolo26n.pt` (`PERSON_WEIGHTS`) and our model only finds the items. Two models per frame, no person labeling needed. |
 
 ## Mapping from the manual checklist
 
 | Manual item | In the system |
 |---|---|
 | Facemask | `mask` / `no_mask` (mask under the nose = `no_mask`) |
-| Hairnet | `hairnet` / `no_hairnet` |
-| Hair | Merged into hairnet: is the hair covered? |
+| Hairnet | Not automated (see #8) |
+| Hair | Not automated (see #8) |
 | Gloves | `gloves` / `no_gloves`, one box per hand |
 | Uniform | Not automated (see #7) |
 | Nails | Not automated (see #4) |

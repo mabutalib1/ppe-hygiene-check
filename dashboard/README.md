@@ -6,12 +6,10 @@ React + Vite + Recharts. The backend serves the built dashboard at **`http://<la
 
 | Page | Shows | Data from |
 |---|---|---|
-| **Live** | Camera stream, a card per person (mask / hairnet / gloves), live alert feed, pop-ups + sound | `WS /ws`, `/stream`, `/stats?days=1` |
+| **Live** | Camera stream, a card per person (mask / gloves), live alert feed, pop-ups + sound | `WS /ws`, `/stream`, `/stats?days=1` |
 | **Alerts** | Full history with snapshots, filters (period, item, open/resolved), CSV export | `/events` |
 | **Insights** | Alerts per day and per hour, by item, time to fix, time in compliance | `/stats` |
-| **Model** | Running detector, the 7 classes, recorded clips, training runs (mAP per class, progress, table) | `/config`, `/dataset/summary`, `/training/results` |
-| **Evaluation** | The 4 goals (caught, false alarms, delay, fps), time logic vs raw | `/evaluation/results`, live fps |
-| **System** | Server / camera / model / speed health, all `CHECK_*` violation settings | `/health`, `/config` |
+| **Model** | Running detector, the 5 classes, recorded clips, training runs (mAP per class, progress, table) | `/config`, `/dataset/summary`, `/training/results` |
 
 ## Run
 
@@ -39,7 +37,6 @@ Nothing here is fake: until a step is done, its page shows an empty state that s
 |---|---|---|
 | Model → training runs | `training/train.py` finishes a run | `training/results.json` (commit it) |
 | Model → recorded data | you log clips | `data/recording_log.csv` |
-| Evaluation | `score_events.py ... --json evaluation/results.json` | `evaluation/results.json` (commit it) |
 
 In demo mode (`DETECTOR=fake`) the top bar shows a **Demo mode** badge so nobody mistakes scripted detections for the model.
 

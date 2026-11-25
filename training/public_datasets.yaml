@@ -1,6 +1,7 @@
 # Public Roboflow Universe datasets for model v0 (checked 2026-11-25).
 # Used by training/build_public_v0.py. version: null = newest version.
 # Licences: credit every CC BY 4.0 / MIT dataset on the sources slide.
+# Hairnet labels in these sets are dropped (not checked, docs/decisions.md #8).
 
 datasets:
   - name: kitchenhygiene          # 9.4k CCTV frames: hairnet / gloves (+ apron, pests → dropped)
@@ -30,6 +31,32 @@ datasets:
     version: null
     license: MIT
     url: https://universe.roboflow.com/group-tbd/real-time-face-mask-detection-and-validation-system-dataset
+
+  # Added 2026-11-25 for the public-only backup model (mask was the weak class).
+  - name: tata-hairnet-mask       # 18.4k: kitchen CCTV frames + close-ups, mask / hairnet
+    workspace: tata-meta-19tsj
+    project: hairnet-and-mask-detection-1ksyo
+    version: null
+    license: CC BY 4.0
+    url: https://universe.roboflow.com/tata-meta-19tsj/hairnet-and-mask-detection-1ksyo
+
+  - name: idp-gowning             # 24.1k: top-down ceiling camera (clinical sim), all 3 items + absent
+    workspace: idp-kwqac
+    project: finaldataset-version2
+    version: null
+    license: CC BY 4.0
+    url: https://universe.roboflow.com/idp-kwqac/finaldataset-version2
+
+  - name: mhm-kitchen             # 8.1k kitchen CCTV frames: maskon / maskoff, glove, hairnet
+    workspace: mhm-sjqug
+    project: 1-yilra
+    version: null
+    license: Public domain
+    url: https://universe.roboflow.com/mhm-sjqug/1-yilra
+
+# Several of these share source videos (mhm-kitchen reuses KitchenHygiene's
+# videos, idp-gowning contains other public sets). build_public_v0.py removes
+# cross-dataset duplicates before splitting, so no frame leaks between splits.
 
 # Every dataset above misses some of our classes (e.g. KitchenHygiene has no
 # mask, the face-mask set has no hairnet or gloves). Person boxes are added

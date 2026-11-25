@@ -46,7 +46,7 @@ Within a minute, Person 2 removes their gloves: the phone buzzes and the dashboa
 
 ## Detector classes
 
-`person`, plus wearing / not wearing for 3 items: `hairnet` `no_hairnet` · `mask` `no_mask` · `gloves` `no_gloves`. Hair is merged into hairnet (is the hair covered?). Uniform and nails are not checked: they can't be judged from CCTV height (see [`docs/decisions.md`](docs/decisions.md)).
+Our model finds wearing / not wearing for 2 items: `mask` `no_mask` · `gloves` `no_gloves`. People (`person`) are found and tracked by a stock COCO model (`yolo26n.pt`), so our dataset doesn't need person boxes. Hairnet, uniform and nails are not checked automatically (see [`docs/decisions.md`](docs/decisions.md) #7, #8).
 
 ## Workflow
 

@@ -50,7 +50,6 @@ html[lang='ar'] .nav-label { text-transform: none; letter-spacing: 0; font-size:
 .nav-link:hover { background: var(--surface-2); color: var(--text); }
 .nav-link.active { background: var(--brand-soft); color: var(--brand-strong); }
 .nav-dot { margin-inline-start: auto; width: 7px; height: 7px; border-radius: 50%; background: var(--bad); }
-.sidebar-foot { margin-top: auto; padding: 0 8px; }
 
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .topbar {
@@ -64,7 +63,6 @@ html[lang='ar'] .nav-label { text-transform: none; letter-spacing: 0; font-size:
 }
 .topbar-logo { display: none; }
 .topbar-status { display: flex; align-items: center; gap: 8px; }
-.topbar-status .conn { display: none; }
 .topbar-actions { margin-inline-start: auto; display: flex; align-items: center; gap: 6px; }
 .content { padding: 28px; max-width: 1440px; width: 100%; margin: 0 auto; animation: page-in 180ms ease-out; }
 @keyframes page-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
@@ -149,7 +147,6 @@ html[lang='ar'] .nav-label { text-transform: none; letter-spacing: 0; font-size:
 
 .item-tag { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
 .item-mask svg { color: var(--item-mask); }
-.item-hairnet svg { color: var(--item-hairnet); }
 .item-gloves svg { color: var(--item-gloves); }
 
 /* ---------------------------------------------------------------- page / cards */
@@ -408,7 +405,6 @@ td.num, th.num { text-align: end; }
   .sidebar { display: none; }
   .topbar { padding: 0 16px; height: 56px; }
   .topbar-logo { display: inline-flex; }
-  .topbar-status .conn { display: inline-flex; }
   .mobile-nav {
     display: flex; gap: 4px; overflow-x: auto; padding: 8px 12px;
     background: var(--surface); border-bottom: 1px solid var(--border);

@@ -5,8 +5,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export const API = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
-export const ITEMS = ['mask', 'hairnet', 'gloves'];
-export const CLASSES = ['person', 'hairnet', 'no_hairnet', 'mask', 'no_mask', 'gloves', 'no_gloves'];
+export const ITEMS = ['mask', 'gloves'];
+export const CLASSES = ['person', 'mask', 'no_mask', 'gloves', 'no_gloves'];
 
 // Live speed goal. The backend caps at TARGET_FPS=10, so ~9.7 measured counts as meeting it.
 export const FPS_GOAL = 10;

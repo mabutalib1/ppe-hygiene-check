@@ -138,7 +138,7 @@ function fillDays(byDay, n) {
     const d = new Date(today);
     d.setDate(today.getDate() - k);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    out.push({ mask: 0, hairnet: 0, gloves: 0, ...map[key], day: key });
+    out.push({ mask: 0, gloves: 0, ...map[key], day: key });
   }
   return out;
 }

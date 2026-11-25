@@ -18,7 +18,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results.md"
 RESULTS_JSON = HERE / "results.json"
-CLASSES = ["person", "hairnet", "no_hairnet", "mask", "no_mask", "gloves", "no_gloves"]
+CLASSES = ["person", "mask", "no_mask", "gloves", "no_gloves"]
 
 
 def main():
@@ -83,7 +83,8 @@ def main():
     # the folder Ultralytics really used (it adds 2, 3, … when run_name already exists)
     weights = Path(model.trainer.save_dir) / "weights"
     best = YOLO(str(weights / "best.pt"))
-    m = best.val(data=str(data_yaml), split=split, imgsz=args.imgsz)
+    m = best.val(data=str(data_yaml), split=split, imgsz=args.imgsz,
+                 project=str(HERE / "runs"), name=f"{run_name}_{split}")
     per_class = {m.names[int(c)]: float(ap50) for c, ap50 in zip(m.box.ap_class_index, m.box.ap50)}
     append_result(args, run_name, float(m.box.map50), float(m.box.map), per_class)
     append_json(args, run_name, float(m.box.map50), float(m.box.map), per_class,

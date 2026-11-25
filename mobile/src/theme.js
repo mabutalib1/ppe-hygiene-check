@@ -17,7 +17,6 @@ export const stateColor = (s) =>
 
 export const ITEMS = [
   { key: 'mask', label: 'Mask' },
-  { key: 'hairnet', label: 'Hairnet' },
   { key: 'gloves', label: 'Gloves' },
 ];
 

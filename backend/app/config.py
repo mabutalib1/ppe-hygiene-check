@@ -58,6 +58,7 @@ class Settings:
     camera_name: str = "kitchen-1"
     detector: str = "yolo"             # "yolo" or "fake" (scripted detections, no model needed)
     weights: str = "weights/best.pt"
+    person_weights: str = "yolo26n.pt" # stock COCO model for people when `weights` has no person class
     device: str = ""                   # "" = auto, "cpu", "0" for first GPU
     imgsz: int = 640
     target_fps: float = 10.0
@@ -77,6 +78,7 @@ class Settings:
         s.camera_name = _env("CAMERA_NAME", s.camera_name)
         s.detector = _env("DETECTOR", s.detector)
         s.weights = _env("WEIGHTS", s.weights)
+        s.person_weights = _env("PERSON_WEIGHTS", s.person_weights)
         s.device = _env("DEVICE", s.device)
         s.imgsz = _env("IMGSZ", s.imgsz)
         s.target_fps = _env("TARGET_FPS", s.target_fps)

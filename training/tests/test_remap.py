@@ -39,7 +39,7 @@ def test_remap_drops_pests_and_warns_about_missing_classes(tmp_path, monkeypatch
     assert [p.stem for p in labels] == ["kitchenhygiene__train__worker"]
     names = yaml.safe_load((Path(remap_public.HERE) / "classes.yaml").read_text())["names"]
     got = [names[int(line.split()[0])] for line in labels[0].read_text().splitlines()]
-    assert got == ["hairnet", "no_gloves"]  # apron dropped
+    assert got == ["no_gloves"]  # apron and hairnet dropped
     err = capsys.readouterr().err
     assert "never labels ['person', 'mask', 'no_mask']" in err and "--add-person" in err
 

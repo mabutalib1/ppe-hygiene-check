@@ -1,8 +1,7 @@
-# The 7 detector classes. Spell them exactly like this in Roboflow.
+# The 5 detector classes. Spell them exactly like this in Roboflow.
+# Hairnet was dropped (docs/decisions.md #8): hairnet labels in public data are ignored.
 names:
   - person
-  - hairnet
-  - no_hairnet
   - mask
   - no_mask
   - gloves
@@ -14,14 +13,6 @@ aliases:
   person: person
   human: person
   worker: person
-  hairnet: hairnet
-  hair-net: hairnet
-  hair_net: hairnet
-  with_hairnet: hairnet
-  headnet: hairnet
-  no_hairnet: no_hairnet
-  without_hairnet: no_hairnet
-  no_hat-hairnet: no_hairnet
   mask: mask
   correct_mask: mask
   "correct mask": mask
@@ -43,3 +34,11 @@ aliases:
   bare-hand: no_gloves
   gloved: gloves                # Gloves Annotated Dataset (Sana Ali)
   not-gloved: no_gloves
+  maskon: mask                  # mhm kitchen
+  maskoff: no_mask
+  mask_absent: no_mask          # IDP FinalDataset-Version2
+  mask_incomplete: no_mask      # mask not covering nose and mouth
+  gloves_absent: no_gloves
+  # Deliberately NOT mapped (dropped):
+  #   hairnet, no_hairnet and their spellings: hairnet is not checked (decisions.md #8)
+  #   without_mask_hairnet  (Tata Meta) one box for two items, can't be split

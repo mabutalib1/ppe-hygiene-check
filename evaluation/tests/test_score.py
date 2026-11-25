@@ -23,7 +23,7 @@ def test_perfect_run():
 
 
 def test_late_or_wrong_item_is_miss_and_false_alarm():
-    s = se.score(GT, [p("e01", "gloves", "removed", 60), p("e02", "hairnet", "removed", 19)], 5.0)
+    s = se.score(GT, [p("e01", "gloves", "removed", 60), p("e02", "gloves", "removed", 19)], 5.0)
     assert s["caught"] == 0 and s["false_alarms"] == 2 and s["false_per_5min"] == 2.0
 
 

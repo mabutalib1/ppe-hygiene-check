@@ -28,13 +28,11 @@ def run(engine, seconds, frame_fn, t0=0.0):
 
 
 def compliant(tid=1, box=P1):
-    return lambda t: [person(tid, box), item("mask", box), item("hairnet", box),
-                      item("gloves", box)]
+    return lambda t: [person(tid, box), item("mask", box), item("gloves", box)]
 
 
 def no_gloves(tid=1, box=P1):
-    return lambda t: [person(tid, box), item("mask", box), item("hairnet", box),
-                      item("no_gloves", box)]
+    return lambda t: [person(tid, box), item("mask", box), item("no_gloves", box)]
 
 
 def kinds(events):
@@ -59,7 +57,7 @@ def test_compliant_person_raises_nothing():
     events, _ = run(eng, 20, compliant())
     assert events == []
     status, _ = eng.update(20.0, compliant()(20.0))
-    assert status[0]["items"] == {"mask": "ok", "hairnet": "ok", "gloves": "ok"}
+    assert status[0]["items"] == {"mask": "ok", "gloves": "ok"}
 
 
 def test_removal_is_one_event_then_resolved_with_duration():
@@ -97,7 +95,7 @@ def test_entering_without_item_is_missing():
 
 def test_hidden_item_is_unknown_never_alerts():
     eng = ViolationEngine(EngineConfig())
-    hidden = lambda t: [person(1), item("mask"), item("hairnet")]  # hands hidden
+    hidden = lambda t: [person(1), item("mask")]  # hands hidden
     events, t = run(eng, 10, hidden)
     status, _ = eng.update(t, hidden(t))
     assert events == [] and status[0]["items"]["gloves"] == "unknown"
@@ -115,8 +113,7 @@ def test_cooldown_limits_repeat_alerts():
 
 def test_low_confidence_items_ignored():
     eng = ViolationEngine(EngineConfig(item_conf=0.4))
-    weak = lambda t: [person(1), item("no_mask", conf=0.2), item("hairnet"),
-                      item("gloves")]
+    weak = lambda t: [person(1), item("no_mask", conf=0.2), item("gloves")]
     events, _ = run(eng, 10, weak)
     assert events == []
 
@@ -129,16 +126,15 @@ def test_two_people_tracked_independently():
 
 
 def test_id_switch_does_not_refire_missing_alert():
-    """Same person, no hairnet, hidden for 2 s, comes back with a new track ID."""
+    """Same person, no mask, hidden for 2 s, comes back with a new track ID."""
     eng = ViolationEngine(EngineConfig())
-    no_net = lambda tid: (lambda t: [person(tid), item("mask"), item("no_hairnet"),
-                                     item("gloves")])
-    e1, t = run(eng, 8, no_net(1))
+    no_mask = lambda tid: (lambda t: [person(tid), item("no_mask"), item("gloves")])
+    e1, t = run(eng, 8, no_mask(1))
     e2, t = run(eng, 2, lambda t: [], t)          # hidden behind someone
-    e3, t = run(eng, 8, no_net(7), t)             # tracker gave a new ID
-    assert kinds(e1) == [("violation", "hairnet", "missing")]
+    e3, t = run(eng, 8, no_mask(7), t)            # tracker gave a new ID
+    assert kinds(e1) == [("violation", "mask", "missing")]
     assert e2 == [] and e3 == []
-    status, _ = eng.update(t, no_net(7)(t))
+    status, _ = eng.update(t, no_mask(7)(t))
     assert status[0]["id"] == 1                   # display ID kept
 
 

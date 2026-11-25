@@ -47,7 +47,7 @@ def test_store_roundtrip(tmp_path):
 def test_dashboard_endpoints(client):
     st = client.get("/stats?days=7").json()
     assert st["total"] == 0 and len(st["by_hour"]) == 24
-    assert set(st["session"]["compliance"]) == {"mask", "hairnet", "gloves"}
+    assert set(st["session"]["compliance"]) == {"mask", "gloves"}
 
     cfg = client.get("/config").json()
     assert cfg["model"]["detector"] == "fake" and cfg["engine"]["window_s"] > 0
@@ -116,7 +116,7 @@ def test_processor_does_not_break_open_events(tmp_path):
 
     got = []
     proc.on_message = got.append
-    t = 0.0
+    t = 1_800_000_000.0  # a real timestamp: Windows can't localise times near 1970
     for lbl, secs in (("gloves", 5), ("no_gloves", 5), ("gloves", 5)):
         proc.detector = lambda f, lbl=lbl: hand(lbl)
         for _ in range(int(secs * 10)):

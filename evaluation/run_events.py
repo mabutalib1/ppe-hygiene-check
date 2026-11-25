@@ -23,11 +23,12 @@ from app.engine import ViolationEngine, raw_config  # noqa: E402
 VIDEO_EXT = {".mp4", ".mov", ".avi", ".mkv"}
 
 
-def run_clip(path: Path, weights: str, cfg: EngineConfig, fps: float, imgsz: int, device: str):
+def run_clip(path: Path, weights: str, cfg: EngineConfig, fps: float, imgsz: int, device: str,
+             person_weights: str = "yolo26n.pt"):
     import cv2
     from app.detector import YoloDetector
 
-    det = YoloDetector(weights, device, imgsz)  # fresh tracker per clip
+    det = YoloDetector(weights, device, imgsz, person_weights=person_weights)  # fresh tracker per clip
     eng = ViolationEngine(cfg, camera=path.stem)
     cap = cv2.VideoCapture(str(path))
     src_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
@@ -58,6 +59,8 @@ def main():
     ap.add_argument("--fps", type=float, default=10.0)
     ap.add_argument("--imgsz", type=int, default=640)
     ap.add_argument("--device", default="")
+    ap.add_argument("--person-weights", default="yolo26n.pt",
+                    help="stock COCO model for people, used when --weights has no person class")
     args = ap.parse_args()
 
     cfg = raw_config() if args.raw else EngineConfig.from_env()
@@ -68,7 +71,7 @@ def main():
     args.out.parent.mkdir(parents=True, exist_ok=True)
     all_rows, durations = [], []
     for c in clips:
-        rows, dur = run_clip(c, args.weights, cfg, args.fps, args.imgsz, args.device)
+        rows, dur = run_clip(c, args.weights, cfg, args.fps, args.imgsz, args.device, args.person_weights)
         print(f"{c.name}: {sum(r['change'] in ('removed', 'missing') for r in rows)} alerts, {dur:.0f}s")
         all_rows += rows
         durations.append({"clip": c.stem, "duration_s": round(dur, 1)})

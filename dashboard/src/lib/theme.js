@@ -12,6 +12,6 @@ function read() {
   return {
     brand: v('brand'), text: v('text'), text2: v('text-2'), text3: v('text-3'),
     border: v('border'), surface: v('surface'), ok: v('ok'), bad: v('bad'), unk: v('unk'),
-    warn: v('warn'), mask: v('item-mask'), hairnet: v('item-hairnet'), gloves: v('item-gloves'),
+    warn: v('warn'), mask: v('item-mask'), gloves: v('item-gloves'),
   };
 }

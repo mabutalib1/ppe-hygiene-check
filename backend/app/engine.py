@@ -12,7 +12,7 @@ Per frame:
 
 Extra guard (not in the original plan): when a track is lost and a new track
 appears close by soon after, the new track inherits the old person record.
-That stops ID switches from re-firing "entered without hairnet" for the same
+That stops ID switches from re-firing "entered without a mask" for the same
 person, because the cooldown would otherwise reset with the new ID.
 """
 from __future__ import annotations

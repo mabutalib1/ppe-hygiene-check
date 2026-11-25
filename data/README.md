@@ -43,7 +43,7 @@ Vary: every teammate plus friends, lights on/off/daylight, 1–3 people in frame
 
 ## Roboflow checklist
 
-1. Object Detection project, 7 classes spelled exactly as in `training/classes.yaml`
+1. Object Detection project, classes spelled exactly as in `training/classes.yaml` (`person` optional, no hairnet)
 2. Upload videos one at a time, sampling **0.5 fps**, split chosen to match the file name
 3. Labeling jobs per batch, **Review Mode on**, paste `labeling_rules.md`
 4. Generate version: **do NOT click Rebalance**. Auto-Orient on, resize 640×640. Augment (train only): brightness/exposure ±20%, slight blur, small noise, horizontal flip. No vertical flip, no big rotations
@@ -51,7 +51,7 @@ Vary: every teammate plus friends, lights on/off/daylight, 1–3 people in frame
 
 ## Public datasets (Roboflow Universe)
 
-Checked 2026-11-25. Download each as a YOLO export into `data/public/<name>/` (gitignored), remap, then upload the output to Roboflow with split **train**.
+Checked 2026-11-25. The tables list what each dataset contains; its hairnet labels are dropped since hairnet is not checked (`docs/decisions.md` #8). Download each as a YOLO export into `data/public/<name>/` (gitignored), remap, then upload the output to Roboflow with split **train**.
 
 | Dataset | Images | Gives us | Licence | Use |
 |---|---|---|---|---|
@@ -59,6 +59,11 @@ Checked 2026-11-25. Download each as a YOLO export into `data/public/<name>/` (g
 | [Gloves Annotated Dataset](https://universe.roboflow.com/sana-ali/gloves-annotated-dataset) | 1k | gloves / no_gloves (video frames) | Public domain | Yes |
 | [Food Industry PPE](https://universe.roboflow.com/proof-87nsb/food-industry-ppe) | 188 | person, mask / no_mask, gloves / no_gloves | CC BY 4.0 | Optional |
 | [Face mask, 3-class](https://universe.roboflow.com/group-tbd/real-time-face-mask-detection-and-validation-system-dataset) | 1.7k | mask / no_mask incl. mask under the nose (close-up faces) | check page | Optional, mask only |
+| [Hairnet and Mask Detection](https://universe.roboflow.com/tata-meta-19tsj/hairnet-and-mask-detection-1ksyo) (Tata Meta) | 18.4k | mask / no_mask, hairnet / no_hairnet (kitchen CCTV frames + close-ups) | CC BY 4.0 | Yes, main mask source |
+| [FinalDataset-Version2](https://universe.roboflow.com/idp-kwqac/finaldataset-version2) (IDP) | 24.1k | all 3 items, worn / absent (top-down ceiling camera, clinical simulation) | CC BY 4.0 | Yes, top-down angle |
+| [1](https://universe.roboflow.com/mhm-sjqug/1-yilra) (mhm) | 8.1k | maskon / maskoff, glove, hairnet (kitchen CCTV frames) | Public domain | Yes |
+
+**Duplicates.** mhm reuses KitchenHygiene's source videos, and IDP contains other public sets. `build_public_v0.py` finds near-identical frames across datasets (difference hash, `--dedup-dist 3`), keeps the copy with the richest labels, and puts videos that share a frame in the same split, so no frame leaks between splits.
 
 Skipped: kitchen-ppe (same source as KitchenHygiene, duplicates), chef1 (no `no_mask`; a chef hat is not a hairnet), knowledgeflex Handglove (messy classes).
 
@@ -66,7 +71,7 @@ Skipped: kitchen-ppe (same source as KitchenHygiene, duplicates), chef1 (no `no_
 
 ### Model v0: public data only (no labeling)
 
-The list lives in `training/public_datasets.yaml`. One command downloads, remaps, adds person boxes, merges and splits (by source video, ~10% valid). It does **not** train:
+The list lives in `training/public_datasets.yaml`. One command downloads, remaps, adds person boxes, merges and splits by source video into ~80% train, ~10% valid and ~10% test, with every class and every dataset in each split when the data allows (otherwise it prints which one is missing). It does **not** train:
 
 ```bash
 export ROBOFLOW_API_KEY=xxxx        # your key, never commit it

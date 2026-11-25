@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
-  BellRing, Brain, ChartColumn, CircleAlert, CircleCheck, FlaskConical, Languages,
-  Server, Video, Volume2, VolumeX, X,
+  BellRing, Brain, ChartColumn, CircleAlert, CircleCheck, Languages,
+  Video, Volume2, VolumeX, X,
 } from 'lucide-react';
 import Logo from './brand/Logo';
 import ItemIcon from './brand/ItemIcon';
@@ -13,16 +13,12 @@ import LivePage from './pages/Live';
 import AlertsPage from './pages/Alerts';
 import InsightsPage from './pages/Insights';
 import ModelPage from './pages/Model';
-import EvaluationPage from './pages/Evaluation';
-import SystemPage from './pages/System';
 
 const PAGES = {
   live: { icon: Video, Page: LivePage, section: 'monitor' },
   alerts: { icon: BellRing, Page: AlertsPage, section: 'monitor' },
   insights: { icon: ChartColumn, Page: InsightsPage, section: 'monitor' },
   model: { icon: Brain, Page: ModelPage, section: 'project' },
-  evaluation: { icon: FlaskConical, Page: EvaluationPage, section: 'project' },
-  system: { icon: Server, Page: SystemPage, section: 'project' },
 };
 
 function useRoute() {
@@ -72,16 +68,12 @@ export default function App() {
               </div>
             ))}
           </nav>
-          <div className="sidebar-foot">
-            <ConnBadge />
-          </div>
         </aside>
 
         <div className="main">
           <header className="topbar">
             <a className="topbar-logo" href="#/live" aria-label="Shayyek"><Logo size={1.2} /></a>
             <div className="topbar-status">
-              <ConnBadge />
               {live.demo && (
                 <span className="badge badge-warn" title={t('demo.hint')}>{t('demo.badge')}</span>
               )}
@@ -113,17 +105,6 @@ export default function App() {
         <Toaster />
       </div>
     </TokensContext.Provider>
-  );
-}
-
-function ConnBadge() {
-  const { conn } = useLive();
-  const { t } = useI18n();
-  return (
-    <span className={`conn conn-${conn}`} title={conn === 'offline' ? t('conn.offlineHint') : undefined}>
-      <span className="conn-dot" />
-      {t(`conn.${conn}`)}
-    </span>
   );
 }
 

@@ -27,7 +27,6 @@ const en = {
   'sound.off': 'Alert sound off',
 
   'item.mask': 'Mask',
-  'item.hairnet': 'Hairnet',
   'item.gloves': 'Gloves',
   'state.ok': 'OK',
   'state.violation': 'Violation',
@@ -221,7 +220,6 @@ const ar = {
   'sound.off': 'صوت التنبيه متوقف',
 
   'item.mask': 'الكمامة',
-  'item.hairnet': 'غطاء الشعر',
   'item.gloves': 'القفازات',
   'state.ok': 'سليم',
   'state.violation': 'مخالفة',
