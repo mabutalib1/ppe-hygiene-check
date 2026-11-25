@@ -13,6 +13,7 @@ names:
 aliases:
   person: person
   human: person
+  worker: person
   hairnet: hairnet
   hair-net: hairnet
   hair_net: hairnet
@@ -27,6 +28,11 @@ aliases:
   no_mask: no_mask
   no-mask: no_mask
   incorrect_mask: no_mask       # mask under the nose counts as no_mask
+  with_mask: mask
+  without_mask: no_mask
+  mask_weared_incorrect: no_mask
+  mask_weared_incorrectly: no_mask
+  mask_worn_incorrectly: no_mask
   glove: gloves
   gloves: gloves
   gloved_hand: gloves
@@ -35,3 +41,5 @@ aliases:
   no-gloves: no_gloves
   bare_hand: no_gloves
   bare-hand: no_gloves
+  gloved: gloves                # Gloves Annotated Dataset (Sana Ali)
+  not-gloved: no_gloves

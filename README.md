@@ -51,7 +51,7 @@ Within a minute, Person 2 removes their gloves: the phone buzzes and the dashboa
 ## Workflow
 
 1. **Record** mock-CCTV clips, split by video ([`data/README.md`](data/README.md))
-2. **Label** in Roboflow with [`data/labeling_rules.md`](data/labeling_rules.md)
+2. **Label** in Roboflow with [`data/labeling_rules.md`](data/labeling_rules.md). Shortcut: build model **v0 from public data only** (`training/build_public_v0.py`, see [`data/README.md`](data/README.md)) and use it to pre-label your frames
 3. **Train** on Colab: [`training/train_colab.ipynb`](training/train_colab.ipynb). Results are logged to [`training/results.md`](training/results.md) and `training/results.json` (the dashboard's Model page)
 4. **Evaluate** events: [`evaluation/README.md`](evaluation/README.md). `--json evaluation/results.json` fills the dashboard's Evaluation page
 5. **Run** the backend with the real weights + the dashboard and app ([`backend/README.md`](backend/README.md))
@@ -63,6 +63,7 @@ Videos stay in the shared drive and Roboflow. Weights (`best.pt`, `best.onnx`) g
 ```bash
 cd backend && pytest                    # violation logic, store, API
 cd .. && pytest evaluation/tests        # event scoring
+pytest training/tests                   # public-dataset remap
 ```
 
 ## Privacy

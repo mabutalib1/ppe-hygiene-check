@@ -5,6 +5,7 @@ and append a row to results.md (for slides) and results.json (for the dashboard)
     python training/train.py --workspace our-workspace --project check-hygiene --version 3
     python training/train.py ... --model yolo26s.pt --imgsz 960      # if gloves stay weak
     python training/train.py ... --model yolo11s.pt                  # fallback model
+    python training/train.py --data data/public/v0/data.yaml --device 0 --batch 32   # local dataset
 
 Runs best on a GPU (Colab / Kaggle). See train_colab.ipynb.
 """
@@ -22,9 +23,10 @@ CLASSES = ["person", "hairnet", "no_hairnet", "mask", "no_mask", "gloves", "no_g
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--workspace", required=True)
-    ap.add_argument("--project", required=True)
-    ap.add_argument("--version", type=int, required=True)
+    ap.add_argument("--data", type=Path, help="local data.yaml instead of a Roboflow download")
+    ap.add_argument("--workspace")
+    ap.add_argument("--project")
+    ap.add_argument("--version", type=int)
     ap.add_argument("--format", default="yolov8", help="copy the exact string from Roboflow's export dialog")
     ap.add_argument("--model", default="yolo26s.pt")
     ap.add_argument("--imgsz", type=int, default=640)
@@ -36,20 +38,28 @@ def main():
     ap.add_argument("--note", default="", help="what changed in this run")
     args = ap.parse_args()
 
-    key = os.environ.get("ROBOFLOW_API_KEY")
-    if not key:
-        raise SystemExit("Set ROBOFLOW_API_KEY (never commit it)")
+    if args.data:
+        data_yaml = args.data.resolve()
+        args.dataset_label = data_yaml.parent.name           # e.g. "v0"
+    else:
+        if not (args.workspace and args.project and args.version):
+            raise SystemExit("Give --data, or --workspace, --project and --version")
+        key = os.environ.get("ROBOFLOW_API_KEY")
+        if not key:
+            raise SystemExit("Set ROBOFLOW_API_KEY (never commit it)")
+        from roboflow import Roboflow
 
-    from roboflow import Roboflow
+        rf = Roboflow(api_key=key)
+        ds = rf.workspace(args.workspace).project(args.project).version(args.version).download(args.format)
+        data_yaml = Path(ds.location) / "data.yaml"
+        args.dataset_label = f"v{args.version}"
+
     from ultralytics import YOLO
 
-    rf = Roboflow(api_key=key)
-    ds = rf.workspace(args.workspace).project(args.project).version(args.version).download(args.format)
-
-    run_name = f"v{args.version}_{Path(args.model).stem}_{args.imgsz}"
+    run_name = f"{args.dataset_label}_{Path(args.model).stem}_{args.imgsz}"
     model = YOLO(args.model)
     model.train(
-        data=f"{ds.location}/data.yaml",
+        data=str(data_yaml),
         epochs=args.epochs,
         imgsz=args.imgsz,
         batch=args.batch,
@@ -62,9 +72,18 @@ def main():
         degrees=0.0,
     )
 
-    # final score on the held-out TEST videos (never used for tuning)
-    best = YOLO(str(HERE / "runs" / run_name / "weights" / "best.pt"))
-    m = best.val(data=f"{ds.location}/data.yaml", split="test", imgsz=args.imgsz)
+    # final score on the held-out TEST videos (never used for tuning).
+    # A dataset without a test split (public-only v0) is scored on valid instead.
+    import yaml
+
+    split = "test" if "test" in yaml.safe_load(data_yaml.read_text()) else "val"
+    if split == "val":
+        print("No test split: scoring on valid. These are not our videos, so don't report it as final.")
+        args.note = (args.note + " " if args.note else "") + "(scored on valid, not our test videos)"
+    # the folder Ultralytics really used (it adds 2, 3, … when run_name already exists)
+    weights = Path(model.trainer.save_dir) / "weights"
+    best = YOLO(str(weights / "best.pt"))
+    m = best.val(data=str(data_yaml), split=split, imgsz=args.imgsz)
     per_class = {m.names[int(c)]: float(ap50) for c, ap50 in zip(m.box.ap_class_index, m.box.ap50)}
     append_result(args, run_name, float(m.box.map50), float(m.box.map), per_class)
     append_json(args, run_name, float(m.box.map50), float(m.box.map), per_class,
@@ -72,12 +91,12 @@ def main():
 
     if args.export_onnx:
         best.export(format="onnx", imgsz=args.imgsz)
-    print(f"\nWeights: {HERE / 'runs' / run_name / 'weights' / 'best.pt'}")
+    print(f"\nWeights: {weights / 'best.pt'}")
 
 
 def append_result(args, run_name, map50, map5095, per_class):
     cols = CLASSES
-    row = [str(date.today()), f"v{args.version}", Path(args.model).stem, str(args.imgsz),
+    row = [str(date.today()), args.dataset_label, Path(args.model).stem, str(args.imgsz),
            f"{map50:.3f}", f"{map5095:.3f}"] + \
           [f"{per_class[c]:.2f}" if c in per_class else "-" for c in cols] + [args.note or run_name]
     with RESULTS.open("a") as f:
@@ -91,7 +110,7 @@ def append_json(args, run_name, map50, map5095, per_class, precision, recall):
     runs.append({
         "date": str(date.today()),
         "run": run_name,
-        "dataset": f"v{args.version}",
+        "dataset": args.dataset_label,
         "model": Path(args.model).stem,
         "imgsz": args.imgsz,
         "epochs": args.epochs,

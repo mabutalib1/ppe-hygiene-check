@@ -1,0 +1,37 @@
+# Public Roboflow Universe datasets for model v0 (checked 2026-11-25).
+# Used by training/build_public_v0.py. version: null = newest version.
+# Licences: credit every CC BY 4.0 / MIT dataset on the sources slide.
+
+datasets:
+  - name: kitchenhygiene          # 9.4k CCTV frames: hairnet / gloves (+ apron, pests → dropped)
+    workspace: kitchen-hygiene-efuu5
+    project: kitchenhygiene
+    version: 3
+    license: CC BY 4.0
+    url: https://universe.roboflow.com/kitchen-hygiene-efuu5/kitchenhygiene
+
+  - name: gloves-annotated        # 1k video frames: gloved / not-gloved
+    workspace: sana-ali
+    project: gloves-annotated-dataset
+    version: 1
+    license: Public domain
+    url: https://universe.roboflow.com/sana-ali/gloves-annotated-dataset
+
+  - name: food-industry-ppe       # 188 images: person, mask / no-mask, gloves / no-gloves
+    workspace: proof-87nsb
+    project: food-industry-ppe
+    version: null
+    license: CC BY 4.0
+    url: https://universe.roboflow.com/proof-87nsb/food-industry-ppe
+
+  - name: face-mask               # 1.7k close-up faces: with / without / under-the-nose mask
+    workspace: group-tbd
+    project: real-time-face-mask-detection-and-validation-system-dataset
+    version: null
+    license: MIT
+    url: https://universe.roboflow.com/group-tbd/real-time-face-mask-detection-and-validation-system-dataset
+
+# Every dataset above misses some of our classes (e.g. KitchenHygiene has no
+# mask, the face-mask set has no hairnet or gloves). Person boxes are added
+# automatically (--add-person). The rest stays unlabeled in v0, which is why v0
+# is a starting point for Label Assist, not the final model.
