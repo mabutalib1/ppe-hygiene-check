@@ -1,12 +1,18 @@
 # Render Blueprint: deploys the backend + web dashboard as one Docker web service.
 # On Render: New → Blueprint → pick this repo. Then open https://<service>.onrender.com/
 #
-# This is the ONLINE DEMO: the real model (v1) running on a recorded clip that
-# loops, because a cloud server can't see the kitchen's camera on the local
-# network. The real system runs on the laptop next to the camera (see backend/README.md).
+# This is the ONLINE DEMO: the real model (v1) running on the shop's LIVE camera.
+# The server signs in to the Nebras camera API, starts a live session for one
+# camera channel and reads its HLS stream (see backend/app/nebras.py). Only Dahua
+# (HLS) cameras work here; Hikvision needs a browser SDK.
 #
-# best.pt and demo.mp4 are not in git: they are assets of the GitHub Release
-# "v1" and are downloaded once at startup. No GPU here, so expect ~3-5 fps.
+# Secrets (sync: false) are NOT in git: set NEBRAS_EMAIL and NEBRAS_PASSWORD in Render → service → Environment.
+# Find the channel id with:  cd backend && python -m app.nebras cameras
+# Back to the recorded clip: CAMERA_SOURCE=media/demo.mp4 plus CAMERA_SOURCE_URL
+# (https://github.com/mabutalib1/ppe-hygiene-check/releases/download/v1/demo.mp4).
+#
+# best.pt is not in git: it is an asset of the GitHub Release "v1" and is
+# downloaded once at startup. No GPU here, so expect ~3-5 fps.
 services:
   - type: web
     name: shayyek
@@ -26,11 +32,21 @@ services:
       - key: PERSON_WEIGHTS
         value: yolo26n.pt
       - key: CAMERA_SOURCE
-        value: media/demo.mp4
-      - key: CAMERA_SOURCE_URL
-        value: https://github.com/mabutalib1/ppe-hygiene-check/releases/download/v1/demo.mp4
-      - key: LOOP_VIDEO
-        value: "true"
+        value: nebras
+      - key: NEBRAS_API_URL
+        value: https://api.nebrasinsights.com
+      - key: NEBRAS_BRAND_ID
+        value: 905ccc5c-eda7-487c-8cf6-c89a1db141b4   # Candira (production)
+      - key: NEBRAS_CHANNEL_ID
+        value: e0d80d93-2eff-49e0-a76d-c47b1a278f89   # Beverage preparation area, Lee Lantee (python -m app.nebras cameras)
+      - key: NEBRAS_QUALITY
+        value: fluent                 # "fluent" if the CPU can't keep up decoding HD
+      - key: NEBRAS_EMAIL
+        sync: false               # Nebras admin account with camera access
+      - key: NEBRAS_PASSWORD
+        sync: false
+      - key: OPENCV_LOG_LEVEL
+        value: ERROR              # keep FFmpeg warnings (which can echo stream URLs) out of logs
       - key: DEVICE
         value: cpu
       - key: CAMERA_NAME

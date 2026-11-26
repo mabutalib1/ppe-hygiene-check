@@ -27,6 +27,7 @@ from .assets import fetch_all
 from .camera import LatestFrameReader
 from .config import Settings
 from .detector import build_detector
+from . import nebras
 from .engine import ViolationEngine
 from .processor import Processor
 from .results import dataset_summary, evaluation_results, redact_source, training_results
@@ -82,7 +83,8 @@ async def lifespan(app: FastAPI):
         log.error("could not load detector: %s", e)
         model_error, detector = repr(e), None
 
-    camera = LatestFrameReader(s.camera_source, loop_video=s.loop_video).start()
+    live = nebras.from_settings(s) if s.camera_source == "nebras" else None
+    camera = LatestFrameReader(s.camera_source, loop_video=s.loop_video, live=live).start()
     hub = Hub()
     hub.loop = asyncio.get_running_loop()
     hub_task = asyncio.create_task(hub.run())
@@ -117,7 +119,8 @@ def health():
         "ok": p is not None and st.camera.connected and (p.last_error is None),
         "version": __version__,
         "camera": {"source": redact_source(st.settings.camera_source), "name": st.settings.camera_name,
-                   "connected": st.camera.connected,
+                   "connected": st.camera.connected, "error": st.camera.last_error,
+                   "live": getattr(st.camera.live, "label", None),
                    "last_frame_age_s": round(time.time() - frame_t, 2) if frame_t else None},
         "model": {"detector": st.settings.detector, "loaded": p is not None,
                   "mode": getattr(p.detector, "mode", None) if p else None,

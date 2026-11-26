@@ -8,7 +8,8 @@ camera → LatestFrameReader → YOLO + ByteTrack → ViolationEngine → MJPEG 
 
 | File | Role |
 |---|---|
-| `app/camera.py` | Background reader, always returns the newest frame (RTSP, webcam, file, synthetic) |
+| `app/camera.py` | Background reader, always returns the newest frame (RTSP, webcam, file, synthetic, Nebras live) |
+| `app/nebras.py` | Shop's live camera through the Nebras camera API: sign-in, live session, lease renew/release |
 | `app/detector.py` | `YoloDetector` (model.track + ByteTrack) and `FakeDetector` (scripted demo). Weights without a `person` class → people are tracked by a stock COCO model (`PERSON_WEIGHTS`, default `yolo26n.pt`, downloaded on first run) and ours only finds items |
 | `app/engine.py` | Item→person assignment, 3 s window vote, events, cooldown, ID-switch guard |
 | `app/processor.py` | The processing loop |
@@ -35,6 +36,22 @@ DETECTOR=yolo WEIGHTS=weights/best.pt CAMERA_SOURCE=http://192.168.1.20:8080/vid
 ```
 
 Open `http://<laptop-ip>:8000/dashboard/` for the web dashboard (build it once: see [`../dashboard/README.md`](../dashboard/README.md)), or `/stream` for the bare annotated video.
+
+### The shop's live camera (Nebras)
+
+`CAMERA_SOURCE=nebras` reads the shop camera through the Nebras camera API instead of a local camera, so it also works on a cloud server (the online demo on Render).
+
+```bash
+# in .env: NEBRAS_BRAND_ID, NEBRAS_EMAIL, NEBRAS_PASSWORD (admin account with camera access)
+python -m app.nebras cameras                     # pick a dahua channel with play=yes
+CAMERA_SOURCE=nebras NEBRAS_CHANNEL_ID=<channel id> uvicorn app.main:app --port 8000
+```
+
+How it works: sign in (`POST /auth/login`), check the channel in the brand's camera list (`online`, `canPlay`), start a live session (`POST /camera-cloud/channels/:id/live`), read the HLS stream with OpenCV, renew the lease every 10 minutes and release it on exit. Every reconnect starts a new session; leases and URLs are never reused. `/health` shows `camera.live` (which camera) and `camera.error` (why it is not connected).
+
+- Only **Dahua (HLS)** cameras work. Hikvision returns its own browser-SDK protocol and is refused with a clear error.
+- The email/password, JWT and stream URL are secrets: env vars only, never in git or logs.
+- Expect a few seconds of delay: HLS is segmented video, not a direct camera feed.
 
 ### Docker
 

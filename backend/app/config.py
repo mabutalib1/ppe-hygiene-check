@@ -54,7 +54,7 @@ class EngineConfig:
 
 @dataclass
 class Settings:
-    camera_source: str = "0"           # RTSP/HTTP URL, webcam index, video file, or "synthetic"
+    camera_source: str = "0"           # RTSP/HTTP URL, webcam index, video file, "synthetic", or "nebras"
     camera_name: str = "kitchen-1"
     detector: str = "yolo"             # "yolo" or "fake" (scripted detections, no model needed)
     weights: str = "weights/best.pt"
@@ -66,6 +66,15 @@ class Settings:
     imgsz: int = 640
     target_fps: float = 10.0
     loop_video: bool = True            # replay video files (demo backup)
+    # CAMERA_SOURCE=nebras: the shop's live camera through the Nebras API (see app/nebras.py)
+    nebras_api_url: str = "https://api.nebrasinsights.com"
+    nebras_brand_id: str = ""
+    nebras_channel_id: str = ""
+    nebras_quality: str = "hd"         # "hd" or "fluent" (lighter to decode on a small CPU)
+    nebras_email: str = ""             # admin account; secrets go in env vars, never in git
+    nebras_password: str = field(default="", repr=False)
+    nebras_token: str = field(default="", repr=False)  # optional ready JWT instead of email/password
+    nebras_company_slug: str = ""      # only for super-admins acting in a tenant
     data_dir: Path = Path("runtime")
     status_hz: float = 2.0
     # dashboard + the result files it shows (missing files → empty states)
@@ -88,6 +97,9 @@ class Settings:
         s.imgsz = _env("IMGSZ", s.imgsz)
         s.target_fps = _env("TARGET_FPS", s.target_fps)
         s.loop_video = _env("LOOP_VIDEO", s.loop_video)
+        for f in ("api_url", "brand_id", "channel_id", "quality", "email", "password", "token",
+                  "company_slug"):
+            setattr(s, f"nebras_{f}", _env(f"NEBRAS_{f.upper()}", getattr(s, f"nebras_{f}")))
         s.data_dir = Path(_env("DATA_DIR", str(s.data_dir)))
         s.status_hz = _env("STATUS_HZ", s.status_hz)
         s.project_dir = Path(_env("PROJECT_DIR", str(s.project_dir)))

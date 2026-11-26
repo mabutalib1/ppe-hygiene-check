@@ -31,5 +31,5 @@ def fetch(url: str, dest: str | Path, timeout: float = 60.0) -> Path:
 def fetch_all(settings) -> None:
     if settings.weights_url:
         fetch(settings.weights_url, settings.weights)
-    if settings.camera_source_url:
+    if settings.camera_source_url and settings.camera_source not in ("nebras", "synthetic"):
         fetch(settings.camera_source_url, settings.camera_source)
